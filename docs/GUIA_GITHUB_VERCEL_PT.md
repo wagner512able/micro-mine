@@ -3,7 +3,7 @@
 1. **Teste no seu computador**: `pip install -e ".[web]"` e depois `python scripts/dev_vercel.py`; abra http://127.0.0.1:3000.
 2. **GitHub**: crie uma conta e um repositório público chamado `micro-mine`. Envie os arquivos
    (pelos comandos `git` do arquivo `DEPLOY_VERCEL.md` ou arrastando a pasta em *Add file > Upload files*).
-   Troque `YOUR-USERNAME` pelo seu usuário nos links.
+   Troque `wagner512able` pelo seu usuário nos links.
 3. **Vercel**: entre em vercel.com com a conta do GitHub, clique em *Add New > Project*, escolha o repositório,
    deixe *Framework Preset = Other* e clique em *Deploy*. Em alguns minutos o site recebe um endereço
    `https://micro-mine-xxxx.vercel.app`.
