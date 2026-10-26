@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.DS_Store
+.vercel/
+node_modules/
+micromine_out/
+demo_data/
+demo_out/
