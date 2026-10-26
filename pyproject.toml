@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "micromine"
+version = "0.13.0"
+description = "Mining and comparison of microsatellites (SSRs) in organellar genomes"
+requires-python = ">=3.9"
+authors = [{name = "Wagner Nunes Ribeiro", email = "wagner2@egresso.ufg.br"}]
+dependencies = ["openpyxl>=3.0", "flask>=2.3"]
+
+[project.optional-dependencies]
+pdf = ["cairosvg"]
+web = ["gunicorn"]
+
+[project.scripts]
+micromine = "micromine.cli:main"
+micromine-web = "micromine.web.app:main"
+
+[tool.setuptools]
+packages = ["micromine", "micromine.web"]
+
+[tool.setuptools.package-data]
+"micromine.web" = ["static/*"]

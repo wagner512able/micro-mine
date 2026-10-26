@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="icon" type="image/png" href="static/favicon.png">
+<title>MICRO-MINE - SSR annotation and comparison of organellar genomes</title>
+<style>
+  :root { --bg:#f4f4f5; --card:#fff; --ink:#18181b; --muted:#667085; --line:#d9dce1; --brand:#000; --accent:#f28c28;
+          --ok:#1a7f4b; --err:#b42318; }
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  body { margin:0; font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+         background:var(--bg); color:var(--ink); line-height:1.45; }
+  .sr { position:absolute; left:-9999px; }
+  header { background:#000; color:#fff; padding:14px 20px 16px; text-align:center; }
+  header .logo { display:block; margin:0 auto; height:clamp(170px,26vw,250px); width:auto; }
+  header p { margin:4px 0 0; color:#d0d0d6; font-size:14px; }
+  header p.by { font-size:12px; color:#9a9aa3; margin-top:2px; }
+  main { max-width:1060px; margin:0 auto; padding:18px 16px 40px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; margin-bottom:16px; }
+  .card h2 { margin:0 0 4px; font-size:17px; }
+  .hint { color:var(--muted); font-size:13px; margin:0 0 12px; }
+  .notice { border-left:4px solid #000; background:#f0f0f1; padding:10px 12px; border-radius:6px; font-size:13px; margin-bottom:14px; }
+  #drop { border:2px dashed var(--line); border-radius:12px; padding:26px; text-align:center; color:var(--muted); cursor:pointer; transition:.15s; }
+  #drop.over { border-color:var(--accent); background:rgba(242,140,40,.08); color:var(--ink); }
+  #drop b { color:var(--ink); }
+  button { font:inherit; border:1px solid var(--line); background:var(--card); color:var(--ink); border-radius:8px; padding:7px 12px; cursor:pointer; }
+  button:hover { border-color:#000; }
+  button.primary { background:#000; border-color:#000; color:#fff; font-weight:600; padding:10px 20px; }
+  button.primary:hover { background:#222; border-color:var(--accent); }
+  button.primary:disabled { opacity:.4; cursor:not-allowed; }
+  button.icon { padding:3px 8px; }
+  .toolbar { display:flex; gap:8px; align-items:center; margin:12px 0 4px; flex-wrap:wrap; }
+  .toolbar .grow { flex:1; }
+  #list { margin-top:8px; }
+  .row { display:grid; grid-template-columns: 22px 38px minmax(120px,1.3fr) minmax(140px,1.4fr) 70px auto; gap:8px;
+         align-items:center; padding:6px 8px; border:1px solid var(--line); border-radius:8px; margin-bottom:6px; background:var(--card); }
+  .row.drag { opacity:.4; }
+  .row.bad { border-color:var(--err); }
+  .row.bad .fname { white-space:normal; color:var(--err); }
+  .row.target { border-color:var(--accent); box-shadow:0 0 0 2px rgba(242,140,40,.3); }
+  .handle { cursor:grab; color:var(--muted); user-select:none; text-align:center; }
+  .num { font-weight:700; color:#000; text-align:center; }
+  .fname { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-size:13px; color:var(--muted); }
+  .size { font-size:12px; color:var(--muted); text-align:right; }
+  select { font:inherit; width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); margin-top:3px; }
+  input[type=text], input[type=number] { font:inherit; width:100%; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--card); color:var(--ink); }
+  input:focus, select:focus { outline:2px solid var(--accent); outline-offset:0; }
+  input[type=checkbox] { accent-color:#000; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; }
+  label.f { display:block; font-size:12px; color:var(--muted); }
+  label.f input { margin-top:3px; color:var(--ink); }
+  details summary { cursor:pointer; font-weight:600; margin:10px 0 8px; }
+  #msg { margin-top:10px; font-size:14px; }
+  .err { color:var(--err); } .ok { color:var(--ok); }
+  #invalid { border:1px solid var(--err); background:rgba(180,35,24,.08); border-radius:8px; padding:10px 12px; margin:8px 0; font-size:13px; }
+  #invalid ul { margin:6px 0 8px 18px; padding:0; } #invalid li { margin:2px 0; }
+  pre { background:rgba(0,0,0,.05); border:1px solid var(--line); border-radius:8px; padding:10px; font-size:12px; max-height:220px; overflow:auto; white-space:pre-wrap; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:10px; margin:10px 0 14px; }
+  .stat { border:1px solid var(--line); border-radius:10px; padding:10px 12px; border-top:3px solid #000; }
+  .stat b { display:block; font-size:24px; color:#000; }
+  .stat span { font-size:12px; color:var(--muted); }
+  table { border-collapse:collapse; width:100%; font-size:13px; margin:8px 0 14px; }
+  th, td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+  th { color:var(--muted); font-weight:600; }
+  td.r, th.r { text-align:right; }
+  .dl { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 16px; }
+  .dl a { text-decoration:none; border:1px solid var(--line); border-radius:8px; padding:7px 12px; color:var(--ink); font-size:13px; }
+  .dl a:hover { border-color:#000; }
+  .dl a.main { background:#000; border-color:#000; color:#fff; font-weight:600; }
+  .fig { border:1px solid var(--line); border-radius:10px; padding:8px; margin:10px 0; overflow:auto; background:#fff; }
+  .fig img { display:block; max-width:none; width:100%; min-width:760px; }
+  .fig h3 { margin:2px 4px 8px; font-size:14px; color:#333; }
+  .legend { font-size:12px; color:var(--muted); }
+  footer { background:#000; color:#b5b5bc; text-align:center; font-size:12px; padding:18px 12px; line-height:1.7; }
+  footer a { color:var(--accent); text-decoration:none; } footer a:hover { text-decoration:underline; }
+  @media (max-width:720px) { .row { grid-template-columns:20px 30px 1fr auto; } .row .fname, .row .size { display:none; } }
+</style>
+</head>
+<body>
+<header>
+  <h1 class="sr">MICRO-MINE</h1>
+  <img class="logo" src="static/logo.jpg" alt="MICRO-MINE - Microsatellite Mineration">
+  <p>Mining, annotation and comparison of microsatellites (SSRs) in organellar genomes</p>
+  <p class="by">Developed by Ph.D. Wagner Nunes Ribeiro</p>
+</header>
+<main>
+  <div class="notice" id="scope"></div>
+
+  <section class="card">
+    <h2>1. Upload genomes</h2>
+    <p class="hint">One FASTA file per species. Upload <b>one</b> file to annotate its SSRs only, or <b>two or more</b> to compare species. The order below sets the order of the species in the report and in the figures;
+      the first species is the reference genome (SSR numbering and zoom coordinates). Drag rows or use the arrows to reorder.</p>
+    <div id="drop"><b>Drop FASTA files here</b> or click to select<br><span id="limits"></span></div>
+    <input id="picker" type="file" multiple accept=".fasta,.fa,.fna,.fas" hidden>
+    <div class="toolbar">
+      <button id="sort">Sort by file name</button>
+      <button id="clear">Remove all</button>
+      <span class="grow"></span>
+      <span id="count" class="hint" style="margin:0"></span>
+    </div>
+    <div id="mode" class="notice" hidden style="margin:8px 0 0"></div>
+    <div id="invalid" hidden></div>
+    <div id="list"></div>
+  </section>
+
+  <section class="card">
+    <h2>2. Parameters</h2>
+    <p class="hint">Minimum number of repeats for each SSR class (defaults follow MISA-Web; set 0 to disable a class).</p>
+    <div class="grid" id="mins"></div>
+    <div class="grid" style="margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))">
+      <label class="f">Flanking region saved with each SSR
+        <select id="flank"><option value="75">75 bp on each side</option>
+          <option value="150" selected>150 bp on each side</option></select></label>
+      <label class="f">SSR highlight in the sequences
+        <select id="ssr_case"><option value="lower">SSR lowercase, flanks UPPERCASE</option>
+          <option value="upper">SSR UPPERCASE, flanks lowercase</option></select></label>
+    </div>
+    <details>
+      <summary>Advanced options</summary>
+      <div class="grid">
+        <label class="f cmp-only">Anchor length for locus matching (bp)<input type="number" id="anchor" value="60" min="20" max="200"></label>
+        <label class="f cmp-only">Minimum flank similarity (0.3-1)<input type="number" id="similarity" value="0.6" min="0.3" max="1" step="0.05"></label>
+        <label class="f cmp-only">Below-threshold search factor (0 = off)<input type="number" id="relax" value="0.6" min="0" max="1" step="0.05"></label>
+      </div>
+      <div class="grid" style="margin-top:12px">
+        <div class="f cmp-only">FASTA outputs
+          <label style="display:block;color:var(--ink)"><input type="checkbox" id="lay_species" checked> one file per species</label>
+          <label style="display:block;color:var(--ink)"><input type="checkbox" id="lay_locus" checked> one file per SSR locus</label>
+          <label style="display:block;color:var(--ink)"><input type="checkbox" id="lay_consolidated" checked> one consolidated file</label>
+        </div>
+      </div>
+      <label class="f cmp-only" style="margin-top:12px">Zoom regions (reference genome coordinates, bp). Example: 20000-40000, 80000-95000
+        <input type="text" id="regions" placeholder="optional"></label>
+    </details>
+  </section>
+
+  <section class="card">
+    <h2>3. Run</h2>
+    <button class="primary" id="run" disabled>Run MICRO-MINE</button>
+    <button id="reset" style="margin-left:8px">Reset parameters</button>
+    <div id="msg"></div>
+    <pre id="log" hidden></pre>
+  </section>
+
+  <section class="card" id="results" hidden>
+    <h2>Results</h2>
+    <p class="hint" id="ttl"></p>
+    <div class="dl" id="downloads"></div>
+    <div class="cards" id="stats"></div>
+    <h3 id="h1" style="font-size:15px;margin:0">Species</h3>
+    <table id="tspecies"></table>
+    <h3 id="h2" style="font-size:15px;margin:0">Variation of the loci</h3>
+    <table id="tvar"></table>
+    <div id="figs"></div>
+    <p class="legend" id="legend">Gold star: exclusive marker (no homologous locus in the other species). Black X: exclusive only because of the
+      threshold (locus present with fewer repeats in the others). Grey mark: SSR below threshold in that species. Red cross: SSR with N bases in its flanking region (compromised: boundaries and primers are unreliable).
+      Hover over an SSR mark in the SVG to see its ID and position. Full details are in the Excel report.</p>
+  </section>
+</main>
+<footer>
+  <div id="foot"></div>
+  <div>Developed by Ph.D. Wagner Nunes Ribeiro &middot; <a href="mailto:wagner2@egresso.ufg.br">wagner2@egresso.ufg.br</a></div>
+</footer>
+
+<script>
+const $ = s => document.querySelector(s);
+let cfg = null, items = [], uid = 0, dragId = null, timer = null, job = null;
+
+function flash(text, cls) { const m = $('#msg'); m.textContent = text; m.className = cls || ''; }
+function fmtSize(n) { return n > 1048576 ? (n / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(n / 1024)) + ' kB'; }
+function defaultLabel(name) {
+  return name.replace(/\.(fasta|fa|fna|fas)$/i, '').replace(/^\d+[_\-\s]+/, '').replace(/[^A-Za-z0-9_.-]+/g, '_').replace(/^[._]+|[._]+$/g, '') || 'genome';
+}
+
+async function init() {
+  cfg = await (await fetch('api/config')).json();
+  $('#scope').textContent = 'Scope: organellar genomes only (chloroplast of plants and algae; mitochondria of animals). ' +
+    'Plant mitochondrial and nuclear genomes are not supported because of their structural plasticity. ' +
+    'Up to ' + cfg.max_files + ' FASTA files, ' + cfg.max_file_mb + ' MB and ' + cfg.max_genome_bp.toLocaleString() + ' bp each. ' +
+    'Accepted bases: A, C, G, T and N (N = unknown base); files with any other character are rejected.';
+  $('#limits').textContent = 'Accepted: .fasta .fa .fna .fas (up to ' + cfg.max_files + ' files)';
+  const serverless = cfg.mode === 'serverless';
+  $('#foot').textContent = 'MICRO-MINE v' + cfg.version + (serverless ? ' - your files are processed in memory and are not stored on the server.'
+    : ' - results are kept for ' + cfg.job_ttl_hours + ' h and then deleted.');
+  if (cfg.repo_url) { const a = document.createElement('a'); a.href = cfg.repo_url; a.textContent = 'Source code on GitHub'; a.rel = 'noopener';
+    $('#foot').append(' \u00B7 ', a); }
+  if (serverless) $('#scope').textContent += ' Online version: up to about ' + cfg.max_payload_mb + ' MB of compressed FASTA per analysis ' +
+    '(roughly 25-50 chloroplast genomes or hundreds of animal mitogenomes). For larger jobs install MICRO-MINE locally.';
+  buildMins(); render();
+}
+function buildMins() {
+  const g = $('#mins'); g.textContent = '';
+  cfg.classes.forEach(([name, def]) => {
+    const l = document.createElement('label'); l.className = 'f'; l.textContent = name + 'nucleotide';
+    const i = document.createElement('input'); i.type = 'number'; i.min = 0; i.max = 50; i.value = def; i.id = 'min_' + name; i.dataset.def = def;
+    l.appendChild(i); g.appendChild(l);
+  });
+}
+function readParams() {
+  const p = {};
+  cfg.classes.forEach(([name]) => { p[name] = parseInt($('#min_' + name).value, 10); });
+  p.flank = parseInt($('#flank').value, 10); p.anchor = parseInt($('#anchor').value, 10);
+  p.similarity = parseFloat($('#similarity').value); p.relax = parseFloat($('#relax').value);
+  p.regions = $('#regions').value; p.ssr_case = $('#ssr_case').value;
+  p.fasta_layout = ['species', 'locus', 'consolidated'].filter(k => $('#lay_' + k).checked);
+  return p;
+}
+
+function addFiles(list) {
+  const msgs = [];
+  for (const f of list) {
+    if (!/\.(fasta|fa|fna|fas)$/i.test(f.name)) { msgs.push(f.name + ': not a .fasta/.fa/.fna/.fas file'); continue; }
+    if (f.size > cfg.max_file_mb * 1048576) { msgs.push(f.name + ': larger than ' + cfg.max_file_mb + ' MB'); continue; }
+    if (items.length >= cfg.max_files) { msgs.push('Limit of ' + cfg.max_files + ' files reached'); break; }
+    const it = { id: ++uid, file: f, label: defaultLabel(f.name), bad: null, checking: true };
+    items.push(it); scan(it);
+  }
+  flash(msgs.join(' | '), msgs.length ? 'err' : '');
+  render();
+}
+
+function fmtBad(bad) {
+  const e = Object.entries(bad).sort((a, b) => b[1] - a[1]);
+  return e.slice(0, 6).map(([c, n]) => c + '\u00D7' + n.toLocaleString()).join(', ') + (e.length > 6 ? ', ...' : '');
+}
+function scan(it) {   // client-side check: only A, C, G, T, N are accepted (the server checks again)
+  const r = new FileReader();
+  r.onload = () => {
+    const bad = {};
+    for (const raw of r.result.split('\n')) {
+      const ln = raw.trim();
+      if (!ln || ln[0] === '>') continue;
+      const m = ln.toUpperCase().match(/[^ACGTN]/g);
+      if (m) for (const c of m) { const k = c === ' ' ? 'space' : c; bad[k] = (bad[k] || 0) + 1; }
+    }
+    it.bad = Object.keys(bad).length ? bad : null; it.checking = false; render();
+  };
+  r.onerror = () => { it.checking = false; render(); };
+  r.readAsText(it.file);
+}
+
+function render() {
+  const list = $('#list'); list.textContent = '';
+  items.forEach((it, idx) => {
+    const r = document.createElement('div'); r.className = 'row' + (it.bad ? ' bad' : ''); r.draggable = true; r.dataset.id = it.id;
+    const h = document.createElement('div'); h.className = 'handle'; h.textContent = '\u22EE\u22EE'; h.title = 'Drag to reorder';
+    const n = document.createElement('div'); n.className = 'num'; n.textContent = String(idx + 1).padStart(2, '0');
+    const fn = document.createElement('div'); fn.className = 'fname'; fn.textContent = it.file.name + (it.bad ? '  \u26A0 invalid bases: ' + fmtBad(it.bad) : it.checking ? '  (checking...)' : ''); fn.title = it.file.name;
+    const lab = document.createElement('input'); lab.type = 'text'; lab.value = it.label; lab.maxLength = 60; lab.title = 'Species label used in the outputs';
+    lab.addEventListener('input', () => { it.label = lab.value; });
+    const sz = document.createElement('div'); sz.className = 'size'; sz.textContent = fmtSize(it.file.size);
+    const act = document.createElement('div');
+    [['\u2191', () => move(idx, -1), 'Move up'], ['\u2193', () => move(idx, 1), 'Move down'], ['\u2715', () => { items.splice(idx, 1); render(); }, 'Remove']]
+      .forEach(([t, fnc, title]) => { const b = document.createElement('button'); b.className = 'icon'; b.textContent = t; b.title = title; b.onclick = fnc; act.appendChild(b); });
+    r.append(h, n, fn, lab, sz, act);
+    r.addEventListener('dragstart', e => { dragId = it.id; r.classList.add('drag'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', String(it.id)); });
+    r.addEventListener('dragend', () => { dragId = null; render(); });
+    r.addEventListener('dragover', e => { if (dragId !== null) { e.preventDefault(); r.classList.add('target'); } });
+    r.addEventListener('dragleave', () => r.classList.remove('target'));
+    r.addEventListener('drop', e => {
+      e.preventDefault();
+      if (dragId === null || dragId === it.id) return;
+      const from = items.findIndex(x => x.id === dragId), to = items.findIndex(x => x.id === it.id);
+      const [m] = items.splice(from, 1); items.splice(to, 0, m); dragId = null; render();
+    });
+    list.appendChild(r);
+  });
+  $('#count').textContent = items.length ? items.length + ' file(s) - species order: 01 to ' + String(items.length).padStart(2, '0') : '';
+  const badItems = items.filter(i => i.bad), box = $('#invalid');
+  box.hidden = !badItems.length; box.textContent = '';
+  if (badItems.length) {
+    box.appendChild(el('div', 'Only the bases A, C, G, T and N are accepted. ' + badItems.length + ' file(s) contain other characters and must be fixed or removed before running:'));
+    const ul = document.createElement('ul');
+    badItems.forEach(i => ul.appendChild(el('li', i.file.name + ': ' + fmtBad(i.bad))));
+    box.appendChild(ul);
+    const rm = el('button', 'Remove the files with invalid bases'); rm.onclick = () => { items = items.filter(i => !i.bad); render(); };
+    box.appendChild(rm);
+  }
+  $('#run').disabled = items.length < cfg.min_files || !!timer || badItems.length > 0 || items.some(i => i.checking);
+  updateMode();
+}
+function updateMode() {
+  const one = items.length === 1;
+  document.querySelectorAll('.cmp-only').forEach(e => { e.hidden = one; });
+  const m = $('#mode');
+  m.hidden = items.length === 0;
+  m.textContent = one ? 'Single file: SSR annotation mode. SSRs are mined and annotated (Excel, GFF3, FASTA and a map of the SSRs); there is no species comparison.'
+    : items.length > 1 ? 'Comparison mode: SSRs are mined in every genome and compared across species.' : '';
+  $('#run').textContent = one ? 'Annotate SSRs' : 'Run MICRO-MINE';
+}
+function move(i, d) { const j = i + d; if (j < 0 || j >= items.length) return; [items[i], items[j]] = [items[j], items[i]]; render(); }
+
+const drop = $('#drop'), picker = $('#picker');
+drop.addEventListener('click', () => picker.click());
+picker.addEventListener('change', () => { addFiles(picker.files); picker.value = ''; });
+['dragenter', 'dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => addFiles(e.dataTransfer.files));
+$('#sort').onclick = () => { items.sort((a, b) => a.file.name.localeCompare(b.file.name, undefined, { numeric: true })); render(); };
+$('#clear').onclick = () => { items = []; flash(''); render(); };
+$('#reset').onclick = () => {
+  cfg.classes.forEach(([name, def]) => { $('#min_' + name).value = def; });
+  $('#flank').value = 150; $('#anchor').value = 60; $('#similarity').value = 0.6; $('#relax').value = 0.6; $('#regions').value = '';
+  $('#ssr_case').value = 'lower'; ['species', 'locus', 'consolidated'].forEach(k => { $('#lay_' + k).checked = true; });
+};
+
+$('#run').onclick = async () => {
+  if (cfg.mode === 'serverless') return runServerless();
+  const labels = items.map(i => i.label);
+  const fd = new FormData();
+  items.forEach(i => fd.append('files', i.file, i.file.name));
+  fd.append('labels', JSON.stringify(labels));
+  fd.append('params', JSON.stringify(readParams()));
+  $('#results').hidden = true; $('#log').hidden = false; $('#log').textContent = '';
+  flash('Uploading ' + items.length + ' files...');
+  $('#run').disabled = true; timer = 1;
+  try {
+    const r = await fetch('api/run', { method: 'POST', body: fd });
+    const j = await r.json();
+    if (!r.ok) { flash(j.error || 'Upload failed.', 'err'); timer = null; render(); return; }
+    job = j.job; poll();
+  } catch (e) { flash('Network error: ' + e.message, 'err'); timer = null; render(); }
+};
+
+let blobUrls = {};
+function setBlobs(downloads) {
+  Object.values(blobUrls).forEach(u => URL.revokeObjectURL(u)); blobUrls = {};
+  for (const [name, d] of Object.entries(downloads)) {
+    const bin = atob(d.b64), bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    blobUrls[name] = URL.createObjectURL(new Blob([bytes], { type: d.mime }));
+  }
+}
+function urlFor(f) { return cfg.mode === 'serverless' ? blobUrls[f] : 'results/' + job + '/' + f; }
+
+async function runServerless() {
+  $('#results').hidden = true; $('#log').hidden = true; $('#run').disabled = true; timer = 1;
+  try {
+    flash('Reading files...');
+    const files = [];
+    for (const it of items) files.push({ name: it.file.name, label: it.label, text: await it.file.text() });
+    const body = JSON.stringify({ files, params: readParams() });
+    let blob = new Blob([body]), type = 'application/json';
+    if (typeof CompressionStream !== 'undefined') {
+      blob = await new Response(new Blob([body]).stream().pipeThrough(new CompressionStream('gzip'))).blob(); type = 'application/gzip';
+    }
+    if (blob.size > cfg.max_payload_mb * 1048576) {
+      flash('The upload is ' + (blob.size / 1048576).toFixed(1) + ' MB after compression; the online limit is ' + cfg.max_payload_mb +
+            ' MB. Remove some genomes or use the local version.', 'err'); return;
+    }
+    flash('Analysing... this can take up to a minute for large sets.');
+    const r = await fetch('api/analyze', { method: 'POST', headers: { 'Content-Type': type }, body: blob });
+    let j;
+    try { j = await r.json(); } catch (e) {
+      j = { error: r.status === 413 ? 'The upload is too large for the online version.' : (r.status === 504 || r.status === 408)
+        ? 'The analysis took longer than the online time limit. Use fewer genomes or the local version.'
+        : 'Unexpected server response (HTTP ' + r.status + ').' };
+    }
+    if (!r.ok) { flash(j.error || 'The analysis failed.', 'err'); return; }
+    setBlobs(j.downloads); $('#log').hidden = false; $('#log').textContent = j.log || '';
+    flash('Done.', 'ok'); showResults(j.summary);
+  } catch (e) { flash('Error: ' + e.message, 'err'); }
+  finally { timer = null; render(); }
+}
+
+async function poll() {
+  try {
+    const j = await (await fetch('api/status/' + job)).json();
+    $('#log').textContent = j.log || ''; $('#log').scrollTop = 1e9;
+    if (j.status === 'queued') flash('Queued... waiting for a free worker.');
+    else if (j.status === 'running') flash('Running...');
+    else if (j.status === 'done') { timer = null; flash('Done.', 'ok'); showResults(j.summary); render(); return; }
+    else if (j.status === 'error') { timer = null; flash(j.message || 'The analysis failed.', 'err'); render(); return; }
+  } catch (e) { /* keep polling */ }
+  timer = setTimeout(poll, 1500);
+}
+
+function el(tag, text, cls) { const e = document.createElement(tag); if (text !== undefined) e.textContent = text; if (cls) e.className = cls; return e; }
+function table(t, head, rows, rightFrom) {
+  t.textContent = '';
+  const tr = el('tr'); head.forEach((h, i) => tr.appendChild(el('th', h, i >= rightFrom ? 'r' : ''))); t.appendChild(tr);
+  rows.forEach(r => { const x = el('tr'); r.forEach((c, i) => x.appendChild(el('td', String(c), i >= rightFrom ? 'r' : ''))); t.appendChild(x); });
+}
+const LEGEND = $('#legend').textContent;
+function showAnnotation(s, base, st) {
+  [[s.ssrs, 'SSRs annotated'], [s.density_per_kb, 'SSRs per kb'], [s.genome.length, 'genome size (bp)'], [s.genome.contigs, 'contig(s)'],
+   [s.genome.n_bases, 'N bases in the genome'], [s.compromised, 'SSRs compromised by N (red cross)']]
+    .forEach(([n, l]) => { const d = el('div', undefined, 'stat'); d.append(el('b', Number(n).toLocaleString()), el('span', l)); st.appendChild(d); });
+  $('#h1').textContent = 'SSRs per class'; $('#h2').textContent = 'Most frequent motifs';
+  const tot = s.ssrs || 1;
+  table($('#tspecies'), ['Class', 'SSRs', '% of SSRs'], Object.entries(s.by_class).map(([k, v]) => [k, v, (100 * v / tot).toFixed(1) + '%']), 1);
+  table($('#tvar'), ['Motif (canonical)', 'Class', 'SSRs'], s.top_motifs, 2);
+  $('#legend').textContent = 'Each mark on the map is one SSR, colored by class. Hover over a mark in the SVG to see its ID, motif, repeats and position. A red cross marks an SSR with N bases in its flanking region (compromised: boundaries and primers are unreliable). The Excel report and the GFF3 file carry the exact coordinates.';
+  const figs = $('#figs'); figs.textContent = '';
+  s.files.filter(f => /\.svg$/.test(f)).forEach(f => {
+    const box = el('div', undefined, 'fig'); box.appendChild(el('h3', 'SSR map'));
+    const img = document.createElement('img'); img.src = urlFor(f); img.alt = f; box.appendChild(img); figs.appendChild(box);
+  });
+  $('#results').scrollIntoView({ behavior: 'smooth' });
+}
+function showResults(s) {
+  $('#results').hidden = false;
+  $('#ttl').textContent = cfg.mode === 'serverless' ? 'Results are not stored on the server: download the ZIP or the files below before leaving this page.'
+    : 'Results are available for ' + cfg.job_ttl_hours + ' hours. Keep a copy of the ZIP file.';
+  const base = 'results/' + job + '/';
+  const dl = $('#downloads'); dl.textContent = '';
+  const zip = el('a', 'Download all (ZIP)', 'main');
+  if (cfg.mode === 'serverless') { zip.href = blobUrls['micromine_results.zip']; zip.download = 'micromine_results.zip'; } else zip.href = 'download/' + job + '.zip';
+  dl.appendChild(zip);
+  const names = { 'micromine_report.xlsx': 'Excel report', 'SSRs_with_flanks.fasta': 'SSRs + flanks (FASTA)', 'micromine_SSRs.gff3': 'GFF3 annotation' };
+  s.files.forEach(f => {
+    const label = names[f] || (/\.(svg|pdf)$/.test(f) ? f.replace('micromine_', '') : null);
+    if (!label) return;
+    if (cfg.mode === 'serverless' && !blobUrls[f]) return;
+    const a = el('a', label); a.href = urlFor(f); if (cfg.mode === 'serverless') a.download = f; else a.target = '_blank'; a.rel = 'noopener'; dl.appendChild(a);
+  });
+  if (s.fasta_per_species || s.fasta_per_locus) $('#ttl').textContent += ' FASTA files in the ZIP: ' + s.fasta_per_species + ' per species, ' + s.fasta_per_locus + ' per SSR locus.';
+  const ann = s.mode === 'annotation';
+  $('#h2').hidden = $('#tvar').hidden = false;
+  const st = $('#stats'); st.textContent = '';
+  if (ann) { showAnnotation(s, base, st); return; }
+  $('#legend').textContent = LEGEND; $('#h1').textContent = 'Species'; $('#h2').textContent = 'Variation of the loci';
+  [[s.loci, 'SSR loci'], [s.exclusive_real, 'real exclusive markers'], [s.exclusive_threshold, 'exclusive only by threshold'],
+   [s.length_polymorphic, 'loci with length polymorphism'], [s.compromised_loci, 'loci compromised by N (red cross)']].forEach(([n, l]) => { const d = el('div', undefined, 'stat'); d.append(el('b', n.toLocaleString()), el('span', l)); st.appendChild(d); });
+  table($('#tspecies'), ['File', 'Species', 'Genome (bp)', 'SSRs', 'N bases', 'SSRs with N'], s.genomes.map(g => [g.tag, g.name, g.length.toLocaleString(), g.ssrs, g.n_bases.toLocaleString(), g.compromised]), 2);
+  table($('#tvar'), ['Variation type', 'Loci'], Object.entries(s.variation), 1);
+  const figs = $('#figs'); figs.textContent = '';
+  s.files.filter(f => /\.svg$/.test(f)).forEach(f => {
+    const box = el('div', undefined, 'fig'); box.appendChild(el('h3', f.replace('micromine_', '').replace('.svg', '').replace(/_/g, ' ')));
+    if (cfg.mode === 'serverless' && !blobUrls[f]) return;
+    const img = document.createElement('img'); img.src = urlFor(f); img.alt = f; img.loading = 'lazy'; box.appendChild(img); figs.appendChild(box);
+  });
+  $('#results').scrollIntoView({ behavior: 'smooth' });
+}
+init();
+</script>
+</body>
+</html>
