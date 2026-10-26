@@ -25,7 +25,7 @@ Vercel CPUs can be slower, so keep an eye on the 60 s limit for very large sets.
     git add .
     git commit -m "MICRO-MINE v0.13"
     git branch -M main
-    git remote add origin https://github.com/YOUR-USERNAME/micro-mine.git
+    git remote add origin https://github.com/wagner512able/micro-mine.git
     git push -u origin main
 
 (or create the repository on github.com, click *Add file > Upload files* and drag the contents of this folder;
@@ -35,7 +35,7 @@ keep the folder structure and do not skip `public/`, `api/`, `micromine/` and `v
 
 1. Sign in at vercel.com with your GitHub account.
 2. *Add New... > Project*, pick the `micro-mine` repository, framework preset **Other**, leave the build settings empty.
-3. (Optional) *Environment Variables*: `MICROMINE_REPO_URL` = `https://github.com/YOUR-USERNAME/micro-mine`
+3. (Optional) *Environment Variables*: `MICROMINE_REPO_URL` = `https://github.com/wagner512able/micro-mine`
    (adds a "Source code on GitHub" link in the footer).
 4. Click **Deploy**. Every `git push` to `main` redeploys automatically.
 
