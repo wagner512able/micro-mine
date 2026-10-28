@@ -12,7 +12,7 @@ them across species: shared, absent, longer/shorter and exclusive SSRs, with fla
     pip install -e ".[web]"
     micromine -i fasta_folder -o results       # command line (files named 01_speciesA.fasta, 02_speciesB.fasta...)
     micromine -i genome.fasta -o results       # single genome: SSR annotation
-    micromine-web --port 8000                  # web page on http://127.0.0.1:8000
+    micromine-web --port 8000                  # web page on [http://127.0.0.1:8000](https://micro-mine.onrender.com/)
     python scripts/dev_vercel.py               # serverless version (as deployed on Vercel) on http://127.0.0.1:3000
 
 Tests: `python tests/test_demo.py && python tests/test_web.py && python tests/test_serverless.py`
