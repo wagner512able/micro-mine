@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 message: "If you use MICRO-MINE in your work, please cite it as below."
 title: "MICRO-MINE: microsatellite mining, annotation and comparison in organellar genomes"
-version: 0.13.0
+version: 1.0.0
 date-released: 2026-10-25
 license: MIT
 authors:
