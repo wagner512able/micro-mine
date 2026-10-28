@@ -13,13 +13,11 @@ them across species: shared, absent, longer/shorter and exclusive SSRs, with fla
     micromine -i fasta_folder -o results       # command line (files named 01_speciesA.fasta, 02_speciesB.fasta...)
     micromine -i genome.fasta -o results       # single genome: SSR annotation
     micromine-web --port 8000                  # web page on (https://micro-mine.onrender.com/)
-    python scripts/dev_vercel.py               # serverless version (as deployed on Render)
 
 Tests: `python tests/test_demo.py && python tests/test_web.py && python tests/test_serverless.py`
 
 ## Deployments
-* **GitHub + Vercel (free, online lite)**: see [docs/DEPLOY_VERCEL.md](docs/DEPLOY_VERCEL.md)
-  (Portuguese: [docs/GUIA_GITHUB_VERCEL_PT.md](docs/GUIA_GITHUB_VERCEL_PT.md)).
+* **GitHub + Render (free, online lite)**: see https://micro-mine.onrender.com
   Stateless: about 4 MB of compressed FASTA and 60 s per analysis; nothing is stored on the server.
 * **Docker / own server (full)**: `docker build -t micromine . && docker run -p 8000:8000 micromine`.
   Background jobs, 10 MB per file, PDF figures, results kept for 24 h.
