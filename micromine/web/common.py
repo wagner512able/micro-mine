@@ -15,7 +15,7 @@ from ..core import CLASS_NAMES, DEFAULT_MIN_REPEATS, VARIATION_TYPES, compromise
 MAX_FILES = 50
 MIN_FILES = 1
 MAX_CONTIGS = 2000
-MAX_GENOME_BP = int(os.environ.get("MICROMINE_MAX_GENOME_BP", "1000000"))
+MAX_GENOME_BP = int(os.environ.get("MICROMINE_MAX_GENOME_BP", "2000000"))
 REPO_URL = os.environ.get("MICROMINE_REPO_URL", "")
 FASTA_EXT = re.compile(r"\.(fasta|fa|fna|fas)$", re.I)
 
