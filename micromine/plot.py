@@ -53,7 +53,7 @@ def plot_svg(path, genomes, clusters, title="MICRO-MINE - SSR comparison", only=
 
     label_font = 11 if n <= 25 else 10
     longest = max(len(g.label) for g in genomes)
-    ml = int(min(330, max(150, longest * label_font * 0.58 + 30)))
+    ml = int(min(330, max(150, longest * label_font * 0.74 + 30)))
     plot_w = 900
     mr = 150 if zoom else 60
     top = 105
@@ -225,7 +225,7 @@ def plot_annotation_svg(path, genome, ssrs, title=None, max_rows=20):
     contigs = genome.contigs[:max_rows]
     longest = max(len(sq) for _, sq in contigs) or 1
     label_font = 11
-    ml = int(min(330, max(110, max(len(c) for c, _ in contigs) * label_font * 0.58 + 30)))
+    ml = int(min(330, max(110, max(len(c) for c, _ in contigs) * label_font * 0.74 + 30)))
     plot_w, top, row = 900, 125, 52
     width = ml + plot_w + 60
     bars_top = top + (len(contigs) - 1) * row + 70

@@ -29,7 +29,10 @@ def main(job_dir: str) -> int:
             flank=p["flank"], anchor=p["anchor"], similarity=p["similarity"], max_files=50,
             threads=1, pdf=pdf, relax=p["relax"], regions=[tuple(r) for r in p["regions"]],
             input_label="uploaded files (web)",
-            fasta_layout=tuple(p.get("fasta_layout", ())), ssr_case=p.get("ssr_case", "lower"))
+            fasta_layout=tuple(p.get("fasta_layout", ())), ssr_case=p.get("ssr_case", "lower"),
+            exclusive_fasta=p.get("exclusive_fasta", "species"),
+            exclusive_single_copy=p.get("exclusive_single_copy", False),
+            exclusive_threshold=p.get("exclusive_threshold", False))
     except (ValueError, OSError) as e:
         print(f"Error: {e}", flush=True)
         return 1

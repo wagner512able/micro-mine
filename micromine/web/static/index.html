@@ -131,6 +131,17 @@
           <label style="display:block;color:var(--ink)"><input type="checkbox" id="lay_consolidated" checked> one consolidated file</label>
         </div>
       </div>
+      <div class="grid" style="margin-top:12px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">
+        <label class="f">Export a FASTA with only the exclusive SSRs (for primer design)
+          <select id="excl_mode"><option value="species">Yes, one file per species</option>
+            <option value="contig">Yes, one file per species and contig</option>
+            <option value="none">No</option></select></label>
+        <div class="f">Exclusive-SSR FASTA options
+          <label style="display:block;color:var(--ink)"><input type="checkbox" id="excl_single"> only single-copy loci (safer for primers)</label>
+          <label class="cmp-only" style="display:block;color:var(--ink)"><input type="checkbox" id="excl_thr"> also include threshold-only exclusives</label>
+        </div>
+      </div>
+      <p class="hint" id="excl_hint" style="margin-top:6px"></p>
       <label class="f cmp-only" style="margin-top:12px">Zoom regions (reference genome coordinates, bp). Example: 20000-40000, 80000-95000
         <input type="text" id="regions" placeholder="optional"></label>
     </details>
@@ -204,6 +215,7 @@ function readParams() {
   p.flank = parseInt($('#flank').value, 10); p.anchor = parseInt($('#anchor').value, 10);
   p.similarity = parseFloat($('#similarity').value); p.relax = parseFloat($('#relax').value);
   p.regions = $('#regions').value; p.ssr_case = $('#ssr_case').value;
+  p.exclusive_fasta = $('#excl_mode').value; p.exclusive_single_copy = $('#excl_single').checked; p.exclusive_threshold = $('#excl_thr').checked;
   p.fasta_layout = ['species', 'locus', 'consolidated'].filter(k => $('#lay_' + k).checked);
   return p;
 }
@@ -289,6 +301,12 @@ function updateMode() {
   m.textContent = one ? 'Single file: SSR annotation mode. SSRs are mined and annotated (Excel, GFF3, FASTA and a map of the SSRs); there is no species comparison.'
     : items.length > 1 ? 'Comparison mode: SSRs are mined in every genome and compared across species.' : '';
   $('#run').textContent = one ? 'Annotate SSRs' : 'Run MICRO-MINE';
+  const opts = $('#excl_mode').options;
+  opts[0].textContent = one ? 'Yes, one file' : 'Yes, one file per species';
+  opts[1].textContent = one ? 'Yes, one file per contig' : 'Yes, one file per species and contig';
+  $('#excl_hint').textContent = one
+    ? 'Single genome: exports only the SSRs of single-copy loci (no similar locus elsewhere in the genome), the safest candidates for primers.'
+    : 'Exports only the SSRs that exist in a single species and have no homologous locus (even below the threshold) in the others.';
 }
 function move(i, d) { const j = i + d; if (j < 0 || j >= items.length) return; [items[i], items[j]] = [items[j], items[i]]; render(); }
 
@@ -303,6 +321,7 @@ $('#clear').onclick = () => { items = []; flash(''); render(); };
 $('#reset').onclick = () => {
   cfg.classes.forEach(([name, def]) => { $('#min_' + name).value = def; });
   $('#flank').value = 150; $('#anchor').value = 60; $('#similarity').value = 0.6; $('#relax').value = 0.6; $('#regions').value = '';
+  $('#excl_mode').value = 'species'; $('#excl_single').checked = false; $('#excl_thr').checked = false;
   $('#ssr_case').value = 'lower'; ['species', 'locus', 'consolidated'].forEach(k => { $('#lay_' + k).checked = true; });
 };
 
@@ -417,6 +436,7 @@ function showResults(s) {
     const a = el('a', label); a.href = urlFor(f); if (cfg.mode === 'serverless') a.download = f; else a.target = '_blank'; a.rel = 'noopener'; dl.appendChild(a);
   });
   if (s.fasta_per_species || s.fasta_per_locus) $('#ttl').textContent += ' FASTA files in the ZIP: ' + s.fasta_per_species + ' per species, ' + s.fasta_per_locus + ' per SSR locus.';
+  if (s.exclusive_fasta_ssrs) $('#ttl').textContent += ' Exclusive/unique-SSR FASTA: ' + s.exclusive_fasta_ssrs + ' SSR(s) in ' + s.exclusive_fasta_files + ' file(s) (folder fasta_exclusive or fasta_unique in the ZIP).';
   const ann = s.mode === 'annotation';
   $('#h2').hidden = $('#tvar').hidden = false;
   const st = $('#stats'); st.textContent = '';

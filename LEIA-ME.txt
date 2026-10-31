@@ -1,0 +1,12 @@
+ATUALIZACAO DO MICRO-MINE: FASTA de exclusivos, repeticoes nos cabecalhos, destaque do trato completo
+
+Esta atualizacao foi feita em cima da SUA versao atual do GitHub (mantem o limite de 2 Mb e o requirements.txt com gunicorn).
+Nao inclui README.md, requirements.txt, CITATION.cff nem os arquivos da Vercel.
+
+Como enviar (pelo navegador):
+1. No GitHub, abra o repositorio > Add file > Upload files.
+2. Arraste para a janela, de dentro desta pasta, estas pastas: .github, docs, micromine, tests
+   (a pasta .github e oculta em alguns sistemas: ative "mostrar arquivos ocultos").
+3. Commit changes. O Render publica de novo sozinho em alguns minutos.
+4. Confira em https://micro-mine.onrender.com/ : na secao 2 (Advanced options) aparece "Export a FASTA with only the exclusive SSRs".
+5. Confira na aba Actions do GitHub se os testes ficaram verdes.

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 
 from openpyxl import Workbook
 from openpyxl.styles import Alignment, Font, PatternFill
@@ -102,16 +103,16 @@ def write_xlsx(path, genomes, clusters, ssrs, params, ssr_case="lower"):
 
     wo = wb.create_sheet("SSR_per_species")
     wo.append(["SSR_ID", "File", "Species", "Contig", "Start", "End", "Observed motif", "Repeats",
-               "Length (bp)", "Orientation vs. reference", "Status", "N bases in flanks",
-               _seq_header(ssr_case)])
+               "Length (bp)", "Partial unit (highlighted, not counted)", "Orientation vs. reference", "Status",
+               "N bases in flanks", _seq_header(ssr_case)])
     for c in clusters:
         rows = [(m, "meets threshold") for m in c.members] + \
                [(h, "below threshold") for h in c.sub.values()]
         for m, sit in sorted(rows, key=lambda x: (x[0].genome, x[0].contig, x[0].start)):
             g = genomes[m.genome]
-            wo.append([c.id, g.tag, g.name, m.contig, m.start, m.end, m.motif, m.reps, len(m.seq),
+            wo.append([c.id, g.tag, g.name, m.contig, m.start, m.end, m.motif, m.reps, len(m.seq), m.tail,
                        "+" if m.orient == 1 else "-", sit, m.n_flank, case_flanked(m, ssr_case)])
-    _finish(wo, {13: 60})
+    _finish(wo, {14: 60})
 
     wr = wb.create_sheet("Summary")
     cls_cols = list(CLASS_NAMES.values())
@@ -185,10 +186,6 @@ def write_xlsx(path, genomes, clusters, ssrs, params, ssr_case="lower"):
     wb.save(path)
 
 
-def _wrap(seq, w=80):
-    return "\n".join(seq[i:i + w] for i in range(0, len(seq), w))
-
-
 def _comp_tag(c, genomes):
     g = compromised_genomes(c)
     return "|compromised_by_N_in=" + ",".join(genomes[i].tag for i in g) if g else ""
@@ -198,13 +195,38 @@ def _n_tag(m):
     return f"|WARNING_N={m.n_flank}" if m.n_flank else ""
 
 
-def _pos_tag(left_len, ssr_len):
-    return f"ssr_in_seq={left_len + 1}-{left_len + ssr_len}"
+def _partial_tag(m):
+    return f"|partial={m.tail}" if m.tail else ""
+
+
+def _pos_tag(left_len, region_len):
+    """Position of the whole highlighted repeat tract inside the extracted sequence (1-based)."""
+    return f"ssr_in_seq={left_len + 1}-{left_len + region_len}"
+
+
+def _safe(name, limit=60):
+    return re.sub(r"[^A-Za-z0-9_.-]+", "_", str(name))[:limit] or "contig"
+
+
+def _wrap(seq, w=80):
+    return "\n".join(seq[i:i + w] for i in range(0, len(seq), w))
+
+
+def _rep_header(c, genomes):
+    """Repeat number per species for FASTA headers (no spaces), e.g. 01:6,02:7,03:3(below_threshold)."""
+    parts = []
+    for gi in sorted(set(c.genomes) | set(c.sub)):
+        if gi in c.by_genome():
+            parts.append(f"{genomes[gi].tag}:" + "/".join(str(m.reps) for m in c.by_genome()[gi]))
+        else:
+            parts.append(f"{genomes[gi].tag}:{c.sub[gi].reps}(below_threshold)")
+    return ",".join(parts)
 
 
 def write_fastas(outdir, genomes, clusters, layouts=("species", "locus", "consolidated"),
                  ssr_case="lower"):
-    """FASTA outputs. The SSR is highlighted by case (see case_flanked).
+    """FASTA outputs. The repeat tract is highlighted by case (see case_flanked); every header carries the motif,
+    the repeat number (`(AAG)6|repeats=6`) and the position of the tract inside the sequence (`ssr_in_seq`).
 
     species      : fasta_per_species/NN_species_SSRs.fasta - every SSR of one species/input file,
                    as found in its genome, with flanks
@@ -224,9 +246,9 @@ def write_fastas(outdir, genomes, clusters, layouts=("species", "locus", "consol
         for g in genomes:
             with open(os.path.join(per, f"{g.label}_SSRs.fasta"), "w") as fh:
                 for m in sorted(by_g[g.idx], key=lambda x: (x.contig, x.start)):
-                    fh.write(f">{m.cluster}|{g.label}|{m.contig}:{m.start}-{m.end}|({m.motif}){m.reps}"
-                             f"|flank={len(m.left)}/{len(m.right)}|{_pos_tag(len(m.left), len(m.seq))}{_n_tag(m)}\n"
-                             f"{_wrap(case_flanked(m, ssr_case))}\n")
+                    fh.write(f">{m.cluster}|{g.label}|{m.contig}:{m.start}-{m.end}|({m.motif}){m.reps}|repeats={m.reps}"
+                             f"|flank={len(m.left)}/{len(m.right)}|{_pos_tag(len(m.left), len(m.region))}"
+                             f"{_partial_tag(m)}{_n_tag(m)}\n{_wrap(case_flanked(m, ssr_case))}\n")
     if "locus" in layouts:
         per = os.path.join(outdir, "fasta_per_locus")
         os.makedirs(per, exist_ok=True)
@@ -237,13 +259,57 @@ def write_fastas(outdir, genomes, clusters, layouts=("species", "locus", "consol
                     if m.orient == -1:
                         seq, lleft, strand = revcomp(seq), len(m.right), "-"
                     fh.write(f">{c.id}|{genomes[m.genome].label}|{m.contig}:{m.start}-{m.end}|"
-                             f"({c.canon}){m.reps}|strand={strand}|{_pos_tag(lleft, len(m.seq))}{_n_tag(m)}\n"
-                             f"{_wrap(seq)}\n")
+                             f"({c.canon}){m.reps}|repeats={m.reps}|strand={strand}|"
+                             f"{_pos_tag(lleft, len(m.region))}{_partial_tag(m)}{_n_tag(m)}\n{_wrap(seq)}\n")
     if "consolidated" in layouts:
         with open(os.path.join(outdir, "SSRs_with_flanks.fasta"), "w") as fh:
             for c in clusters:
                 r = c.ref
                 pres = ",".join(genomes[i].tag for i in c.genomes)
-                fh.write(f">{c.id}|({c.canon})n|ref={genomes[r.genome].label}|{r.contig}:{r.start}-{r.end}"
-                         f"|present_in={pres}|{_pos_tag(len(r.left), len(r.seq))}{_n_tag(r)}{_comp_tag(c, genomes)}\n"
+                fh.write(f">{c.id}|({c.canon}){r.reps}|repeats={r.reps}|ref={genomes[r.genome].label}|"
+                         f"{r.contig}:{r.start}-{r.end}|repeats_by_species={_rep_header(c, genomes)}|present_in={pres}|"
+                         f"{_pos_tag(len(r.left), len(r.region))}{_partial_tag(r)}{_n_tag(r)}{_comp_tag(c, genomes)}\n"
                          f"{_wrap(case_flanked(r, ssr_case))}\n")
+
+
+def write_exclusive_fasta(outdir, genomes, clusters, mode="species", single_copy=False,
+                          include_threshold=False, ssr_case="lower"):
+    """FASTA with ONLY the exclusive SSRs, ready for primer design (no manual filtering needed).
+
+    A locus is exclusive when it meets the threshold in a single species. By default only REAL exclusive loci are
+    exported (no homologous locus, even below the threshold, in the other species); threshold-only exclusives can
+    be added. single_copy keeps only loci with one copy in that species (safer for primers).
+
+    mode 'species': fasta_exclusive/NN_species_exclusive.fasta (one file per species)
+    mode 'contig' : fasta_exclusive/NN_species__contig_exclusive.fasta (one file per species and contig)
+    Returns (number of SSRs written, number of files).
+    """
+    if mode not in ("species", "contig"):
+        return 0, 0
+    n = len(genomes)
+    groups: dict[str, list] = {}
+    for c in clusters:
+        kind = exclusivity(c, n)
+        if kind is None or (kind == "threshold" and not include_threshold):
+            continue
+        gi = c.genomes[0]
+        copies = c.by_genome()[gi]
+        if single_copy and len(copies) > 1:
+            continue
+        for m in copies:
+            key = genomes[gi].label if mode == "species" else f"{genomes[gi].label}__{_safe(m.contig)}"
+            groups.setdefault(key, []).append((m, c, kind, len(copies), genomes[gi].label))
+    if not groups:
+        return 0, 0
+    per = os.path.join(outdir, "fasta_exclusive")
+    os.makedirs(per, exist_ok=True)
+    total = 0
+    for key, recs in sorted(groups.items()):
+        with open(os.path.join(per, f"{key}_exclusive.fasta"), "w") as fh:
+            for m, c, kind, nc, label in sorted(recs, key=lambda t: (t[0].contig, t[0].start)):
+                fh.write(f">{c.id}|{label}|{m.contig}:{m.start}-{m.end}|({m.motif}){m.reps}|repeats={m.reps}|"
+                         f"exclusive={'real' if kind == 'real' else 'threshold_only'}|locus_copies={nc}|"
+                         f"flank={len(m.left)}/{len(m.right)}|{_pos_tag(len(m.left), len(m.region))}"
+                         f"{_partial_tag(m)}{_n_tag(m)}\n{_wrap(case_flanked(m, ssr_case))}\n")
+                total += 1
+    return total, len(groups)

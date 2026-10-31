@@ -130,7 +130,9 @@ def analyze():
                 max_files=MAX_FILES, threads=1, pdf=False, relax=params["relax"],
                 regions=[tuple(r) for r in params["regions"]], log=log.append,
                 input_label="uploaded files (web)", fasta_layout=tuple(params["fasta_layout"]),
-                ssr_case=params["ssr_case"])
+                ssr_case=params["ssr_case"], exclusive_fasta=params["exclusive_fasta"],
+                exclusive_single_copy=params["exclusive_single_copy"],
+                exclusive_threshold=params["exclusive_threshold"])
         except (ValueError, OSError) as e:
             return jsonify(error=str(e)), 400
         summary = build_summary(genomes, clusters, ssrs, out_dir)

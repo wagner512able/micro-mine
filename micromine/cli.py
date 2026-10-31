@@ -12,7 +12,7 @@ from .core import (CLASS_NAMES, DEFAULT_MIN_REPEATS, cluster_ssrs, discover_geno
                    find_subthreshold, is_variable, mine_genome, number_clusters, relaxed_mins)
 from .annotate import run_annotation
 from .plot import plot_svg, svg_to_pdf
-from .report import write_fastas, write_xlsx
+from .report import write_exclusive_fasta, write_fastas, write_xlsx
 
 
 def _parse_region(text):
@@ -40,7 +40,8 @@ def _parse_layout(text):
 
 def run(input_dir, output_dir, min_repeats=None, flank=150, anchor=60, similarity=0.6,
         max_files=50, threads=1, pdf=False, relax=0.6, regions=None, log=print, input_label=None,
-        fasta_layout=("species", "locus", "consolidated"), ssr_case="lower"):
+        fasta_layout=("species", "locus", "consolidated"), ssr_case="lower",
+        exclusive_fasta="species", exclusive_single_copy=False, exclusive_threshold=False):
     mins = dict(DEFAULT_MIN_REPEATS)
     mins.update(min_repeats or {})
     genomes = discover_genomes(input_dir, max_files=max_files)
@@ -48,7 +49,7 @@ def run(input_dir, output_dir, min_repeats=None, flank=150, anchor=60, similarit
         if regions:
             log("[warning] zoom regions are ignored in single-genome annotation mode")
         return run_annotation(genomes[0], output_dir, mins, flank, pdf, ssr_case, fasta_layout, log,
-                              input_label, input_dir)
+                              input_label, input_dir, anchor, similarity, exclusive_fasta)
     if anchor > flank:
         raise ValueError("the anchor length cannot be larger than the flank length")
     log(f"[MICRO-MINE] {len(genomes)} genome(s): " + ", ".join(g.label for g in genomes))
@@ -76,12 +77,21 @@ def run(input_dir, output_dir, min_repeats=None, flank=150, anchor=60, similarit
               "Flank length (bp)": flank, "Anchor length for locus matching (bp)": anchor,
               "Minimum flank similarity": similarity,
               "Relaxation factor (below-threshold search)": relax,
+              "Exclusive-SSR FASTA": (f"{exclusive_fasta}" + (", single-copy loci only" if exclusive_single_copy else "")
+                                      + (", incl. threshold-only" if exclusive_threshold else "")) if exclusive_fasta != "none" else "off",
               "FASTA layout": ",".join(fasta_layout) or "none",
               "SSR highlight": "SSR lowercase, flanks UPPERCASE" if ssr_case != "upper" else "SSR UPPERCASE, flanks lowercase"}
     params.update({f"Min. repeats {name}": mins[k] for k, name in CLASS_NAMES.items()})
     params.update({f"Relaxed min. repeats {CLASS_NAMES[k]}": v for k, v in relaxed_mins(mins, relax).items()})
     write_xlsx(os.path.join(output_dir, "micromine_report.xlsx"), genomes, clusters, ssrs, params, ssr_case)
     write_fastas(output_dir, genomes, clusters, fasta_layout, ssr_case)
+    if exclusive_fasta in ("species", "contig"):
+        n_ex, n_files = write_exclusive_fasta(output_dir, genomes, clusters, exclusive_fasta, exclusive_single_copy,
+                                              exclusive_threshold, ssr_case)
+        log(f"[MICRO-MINE] exclusive-SSR FASTA: {n_ex} SSR(s) in {n_files} file(s) (fasta_exclusive/)")
+        if n_ex == 0 and not exclusive_threshold and "threshold" in kinds:
+            log("  no REAL exclusive SSR was found; use --exclusive-threshold (web: 'also include threshold-only "
+                "exclusives') to export the SSRs that are exclusive only because of the threshold")
 
     plots = [(os.path.join(output_dir, "micromine_comparison.svg"), {}),
              (os.path.join(output_dir, "micromine_variable_markers.svg"),
@@ -126,6 +136,14 @@ def main(argv=None):
                    help="FASTA outputs, comma separated: species (one file per species), locus (one file per "
                         "SSR locus with the copy from each species), consolidated (one file with all loci), "
                         "or none (default: species,locus,consolidated)")
+    p.add_argument("--exclusive-fasta", choices=("none", "species", "contig"), default="species",
+                   help="export a FASTA with only the exclusive SSRs (with flanks), one file per species or per "
+                        "species+contig; with a single genome it exports the SSRs of single-copy loci "
+                        "(default: species)")
+    p.add_argument("--exclusive-single-copy", action="store_true",
+                   help="exclusive-SSR FASTA: keep only loci with a single copy in the species (safer for primers)")
+    p.add_argument("--exclusive-threshold", action="store_true",
+                   help="exclusive-SSR FASTA: also include SSRs that are exclusive only because of the threshold")
     p.add_argument("--ssr-case", choices=("lower", "upper"), default="lower",
                    help="highlight the SSR by case: lower = SSR lowercase / flanks UPPERCASE (default); "
                         "upper = SSR UPPERCASE / flanks lowercase")
@@ -138,7 +156,8 @@ def main(argv=None):
     try:
         run(a.input, a.output, mins, a.flank, a.anchor, a.similarity, a.max_files, a.threads,
             a.pdf, a.relax, a.region,
-            fasta_layout=a.fasta_layout, ssr_case=a.ssr_case)
+            fasta_layout=a.fasta_layout, ssr_case=a.ssr_case, exclusive_fasta=a.exclusive_fasta,
+            exclusive_single_copy=a.exclusive_single_copy, exclusive_threshold=a.exclusive_threshold)
     except (ValueError, OSError) as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1

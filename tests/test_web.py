@@ -27,7 +27,7 @@ assert post([("a.fasta", b">x\nACGT123\n")] * 2).status_code == 400            #
 rb = post([("a.fasta", b">x\nACGTRY\n"), ("b.fasta", b">y\nACGT-U\n"), good[0]])           # IUPAC / gap / U rejected
 jb = rb.get_json(); assert rb.status_code == 400 and len(jb["problems"]) == 2, jb
 assert jb["problems"][0]["bases"] == {"R": 1, "Y": 1} and jb["problems"][0]["file"] == "a.fasta" and "b.fasta" in jb["error"]
-assert post([("a.fasta", b">x\n" + b"A" * 1_100_000 + b"\n")] * 2).status_code == 400   # too long
+assert post([("a.fasta", b">x\n" + b"A" * 2_100_000 + b"\n")] * 2).status_code == 400   # too long
 assert post(good, params={"mono": 1}).status_code == 400                       # min repeats of 1
 assert post(good, params={"regions": "9-3"}).status_code == 400
 assert post(good, params={"flank": 75, "anchor": 100}).status_code == 400      # anchor > flank

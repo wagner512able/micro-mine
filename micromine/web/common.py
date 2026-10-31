@@ -132,7 +132,12 @@ def parse_params(raw) -> dict:
     flank, anchor = num("flank", 20, 500, int, 150), num("anchor", 20, 200, int, 60)
     if anchor > flank:
         raise ValueError("The anchor length cannot be larger than the flank length.")
-    return {"min_repeats": mins, "fasta_layout": layout, "ssr_case": ssr_case, "flank": flank, "anchor": anchor,
+    exclusive = p.get("exclusive_fasta", "species")
+    if exclusive not in ("none", "species", "contig"):
+        raise ValueError("Invalid exclusive-SSR FASTA option.")
+    return {"exclusive_fasta": exclusive, "exclusive_single_copy": bool(p.get("exclusive_single_copy", False)),
+            "exclusive_threshold": bool(p.get("exclusive_threshold", False)),
+            "min_repeats": mins, "fasta_layout": layout, "ssr_case": ssr_case, "flank": flank, "anchor": anchor,
             "similarity": num("similarity", 0.3, 1.0, float, 0.6),
             "relax": num("relax", 0.0, 1.0, float, 0.6), "regions": regions}
 
@@ -140,6 +145,19 @@ def parse_params(raw) -> dict:
 def build_summary(genomes, clusters, ssrs, out_dir) -> dict:
     """Summary of one analysis (used by the results page)."""
     files = sorted(f for f in os.listdir(out_dir) if os.path.isfile(os.path.join(out_dir, f)))
+    excl_files, excl_ssrs = 0, 0
+    for sub in ("fasta_exclusive", "fasta_unique"):
+        d = os.path.join(out_dir, sub)
+        if os.path.isdir(d):
+            for f in os.listdir(d):
+                excl_files += 1
+                with open(os.path.join(d, f)) as fh:
+                    excl_ssrs += sum(1 for line in fh if line.startswith(">"))
+    if "SSRs_unique_single_copy.fasta" in files:
+        excl_files += 1
+        with open(os.path.join(out_dir, "SSRs_unique_single_copy.fasta")) as fh:
+            excl_ssrs += sum(1 for line in fh if line.startswith(">"))
+    extra = {"exclusive_fasta_files": excl_files, "exclusive_fasta_ssrs": excl_ssrs}
 
     def count(sub):
         d = os.path.join(out_dir, sub)
@@ -156,7 +174,7 @@ def build_summary(genomes, clusters, ssrs, out_dir) -> dict:
                 "density_per_kb": round(len(ssrs) / (g.length / 1000), 2) if g.length else 0,
                 "by_class": {n: by_class.get(n, 0) for n in CLASS_NAMES.values()},
                 "top_motifs": [[m, cls, c] for (m, cls), c in motifs], "files": files,
-                "fasta_per_species": 0, "fasta_per_locus": 0}
+                "fasta_per_species": 0, "fasta_per_locus": 0, **extra}
     n = len(genomes)
     kinds = [exclusivity(c, n) for c in clusters]
     counts = {g.idx: 0 for g in genomes}
@@ -175,4 +193,4 @@ def build_summary(genomes, clusters, ssrs, out_dir) -> dict:
             "exclusive_threshold": kinds.count("threshold"),
             "length_polymorphic": sum(1 for c in clusters if is_polymorphic(c)),
             "variation": var, "files": files,
-            "fasta_per_species": count("fasta_per_species"), "fasta_per_locus": count("fasta_per_locus")}
+            "fasta_per_species": count("fasta_per_species"), "fasta_per_locus": count("fasta_per_locus"), **extra}

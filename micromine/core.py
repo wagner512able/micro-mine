@@ -164,6 +164,7 @@ class SSR:
     cluster: str = ""
     orient: int = 1   # orientation relative to the cluster representative
     n_flank: int = 0  # N bases in the saved flanking regions (the SSR itself never contains N)
+    tail: str = ""    # incomplete repeat unit that continues the tract after the last full unit (highlighted, not counted)
 
     @property
     def compromised(self) -> bool:
@@ -183,9 +184,14 @@ class SSR:
         return self.offset + (self.start + self.end) / 2
 
     @property
+    def region(self) -> str:
+        """The whole repeat tract: full units plus the incomplete unit that continues it (if any)."""
+        return self.seq + self.tail
+
+    @property
     def flanked(self) -> str:
-        """Left flank + SSR (lowercase) + right flank."""
-        return self.left + self.seq.lower() + self.right
+        """Left flank + repeat tract (lowercase) + right flank."""
+        return self.left + self.region.lower() + self.right
 
 
 def case_flanked(s: SSR, ssr_case: str = "lower") -> str:
@@ -194,8 +200,8 @@ def case_flanked(s: SSR, ssr_case: str = "lower") -> str:
     'lower': flanks UPPERCASE, SSR lowercase (default); 'upper': flanks lowercase, SSR UPPERCASE.
     """
     if ssr_case == "upper":
-        return s.left.lower() + s.seq.upper() + s.right.lower()
-    return s.left.upper() + s.seq.lower() + s.right.upper()
+        return s.left.lower() + s.region.upper() + s.right.lower()
+    return s.left.upper() + s.region.lower() + s.right.upper()
 
 
 def _patterns(min_repeats: dict) -> dict:
@@ -222,11 +228,19 @@ def mine_genome(genome: Genome, min_repeats: dict, flank: int = 150) -> list[SSR
                 continue
             kept.append(h)
         for s, e, motif in kept:
-            left, right = seq[max(0, s - flank):s], seq[e:e + flank]
+            # the periodic tract may continue with an incomplete unit right after the last full unit
+            # (e.g. (TC)6 followed by T): it belongs to the repeat tract, so it is highlighted and the right
+            # flank starts after it. Repeat number, length and coordinates keep counting full units (as MISA).
+            k, tail = len(motif), ""
+            while len(tail) < k - 1 and e + len(tail) < len(seq) and seq[e + len(tail)] == motif[len(tail)]:
+                tail += motif[len(tail)]
+            left = seq[max(0, s - flank):s]
+            right = seq[e + len(tail):e + len(tail) + flank]
             out.append(SSR(
                 genome=genome.idx, contig=cid, start=s + 1, end=e, motif=motif,
                 canon=canonical_motif(motif), reps=(e - s) // len(motif), seq=seq[s:e],
-                left=left, right=right, offset=offset, n_flank=left.count("N") + right.count("N")))
+                left=left, right=right, offset=offset, n_flank=left.count("N") + right.count("N"),
+                tail=tail))
         offset += len(seq)
     return out
 
