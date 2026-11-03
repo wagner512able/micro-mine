@@ -236,6 +236,9 @@ def mine_genome(genome: Genome, min_repeats: dict, flank: int = 150) -> list[SSR
                 tail += motif[len(tail)]
             left = seq[max(0, s - flank):s]
             right = seq[e + len(tail):e + len(tail) + flank]
+            n_in_flanks = left.count("N") + right.count("N")
+            if n_in_flanks > 0:
+                continue
             out.append(SSR(
                 genome=genome.idx, contig=cid, start=s + 1, end=e, motif=motif,
                 canon=canonical_motif(motif), reps=(e - s) // len(motif), seq=seq[s:e],
