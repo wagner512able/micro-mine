@@ -10,11 +10,15 @@ them across species: shared, absent, longer/shorter and exclusive SSRs, with fla
 
 ## Quick start
     pip install -e ".[web]"
-    micromine -i fasta_folder -o results       # command line (files named 01_speciesA.fasta, 02_speciesB.fasta...)
-    micromine -i genome.fasta -o results       # single genome: SSR annotation
-    micromine-web --port 8000                  # web page on (https://micro-mine.onrender.com/)
+    python3 -m micromine -i fasta_folder -o results      # command line (files named 01_speciesA.fasta, 02_speciesB.fasta...)
+    python3 -m micromine -i genome.fasta -o results      # single genome: SSR annotation
+    python3 -m micromine-web --port 8000                 # web page on (https://micro-mine.onrender.com/)
 
-Tests: `python tests/test_demo.py && python tests/test_web.py && python tests/test_serverless.py`
+Tests: To run the test suite and verify the package installation, execute:
+
+    python3 -m unittest discover -s tests
+  # Or run individual tests:
+    python3 tests/test_demo.py && python3 tests/test_web.py && python3 tests/test_serverless.py
 
 ## Deployments
 * **GitHub + Render (free, online lite)**: see https://micro-mine.onrender.com
