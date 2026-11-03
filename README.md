@@ -64,7 +64,7 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br
 
     # If you need to generate an additional image of specific genomic regions, use the command 
     below according to the size of your genome:
-    micromine -i /path/to/your/fasta/directory -o /path/to/your/output/results --region 20000-40000 # + zoomed plot
+    python3 -m micromine -i /path/to/your/fasta/directory -o /path/to/your/output/results --region 20000-40000 # + zoomed plot
 
 Input files: `01_speciesA.fasta`, `02_speciesB.fasta`, ... The number sets the order of the
 species in the report and in the plots; the first file is the reference genome.
