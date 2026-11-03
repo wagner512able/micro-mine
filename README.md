@@ -47,6 +47,7 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br
     prefixed with a two-digit numerical identifier (e.g., 01_species.fasta, 02_species.fasta). 
     If your files lack this prefix, you can automatically rename them by navigating to your 
     FASTA folder and running the following Bash script:
+    
     cd /path/to/your/fasta/directory
     i=1
     for f in *.fasta; do
