@@ -15,9 +15,8 @@ them across species: shared, absent, longer/shorter and exclusive SSRs, with fla
     python3 -m micromine-web --port 8000                 # web page on (https://micro-mine.onrender.com/)
 
 Tests: To run the test suite and verify the package installation, execute:
-
     python3 -m unittest discover -s tests
-  # Or run individual tests:
+Or run individual tests: 
     python3 tests/test_demo.py && python3 tests/test_web.py && python3 tests/test_serverless.py
 
 ## Deployments
