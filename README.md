@@ -29,7 +29,8 @@ See [CITATION.cff](CITATION.cff). License: MIT (see `LICENSE`).
 Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br
 
 ## Usage
-    # To install and run MICRO-MINE locally, first navigate to your home directory (user root folder), then clone the repository and enter the project directory by running:
+    # To install and run MICRO-MINE locally, first navigate to your home directory (user root folder), 
+    then clone the repository and enter the project directory by running:
     git clone https://github.com/wagner512able/micro-mine.git and 
     cd micro-mine. 
     
@@ -42,7 +43,10 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br
     and install openpyxl for spreadsheet support with:
     conda install openpyxl -y
     
-    # Prior to running the software, ensure your input FASTA files are stored in a directory and prefixed with a two-digit numerical identifier (e.g., 01_species.fasta, 02_species.fasta). If your files lack this prefix, you can automatically rename them by navigating to your FASTA folder and running the following Bash script:
+    # Prior to running the software, ensure your input FASTA files are stored in a directory and 
+    prefixed with a two-digit numerical identifier (e.g., 01_species.fasta, 02_species.fasta). 
+    If your files lack this prefix, you can automatically rename them by navigating to your 
+    FASTA folder and running the following Bash script:
     cd /path/to/your/fasta/directory
     i=1
     for f in *.fasta; do
@@ -53,11 +57,13 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br
     fi
     done
 
-    # Finally, return to the project root directory and execute MICRO-MINE by pointing to your input folder and desired output destination using the command:
+    # Finally, return to the project root directory and execute MICRO-MINE by pointing to your 
+    input folder and desired output destination using the command:
     python3 -m micromine -i /path/to/your/fasta/directory -o /path/to/your/output/results
 
-    # If you need to generate an additional image of specific genomic regions, use the command below according to the size of your genome:
-    micromine -i /path/to/your/fasta/directory -o /path/to/your/output/results --region 20000-40000   # + zoomed plot
+    # If you need to generate an additional image of specific genomic regions, use the command 
+    below according to the size of your genome:
+    micromine -i /path/to/your/fasta/directory -o /path/to/your/output/results --region 20000-40000 # + zoomed plot
 
 Input files: `01_speciesA.fasta`, `02_speciesB.fasta`, ... The number sets the order of the
 species in the report and in the plots; the first file is the reference genome.
