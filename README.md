@@ -6,7 +6,7 @@ Mining, annotation and comparison of microsatellites (SSRs) in **organellar geno
 plants/algae, mitochondria of animals). Give it **one FASTA** to annotate its SSRs or **2-50 FASTA files** to compare
 them across species: shared, absent, longer/shorter and exclusive SSRs, with flanking regions ready for primer design.
 
-![MICRO-MINE results page](docs/screenshot.png)
+![MICRO-MINE results page](docs/micromine_variable_markers (1).jpg)
 
 ## Quick start
     pip install -e ".[web]"
