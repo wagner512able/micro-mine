@@ -69,6 +69,8 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br
     below according to the size of your genome:
     python3 -m micromine -i /path/to/your/fasta/directory -o /path/to/your/output/results --region 20000-40000 # + zoomed plot
 
+    If you would like more specific parameters, they are listed below in the "Main Options" section.
+
 Input files: `01_speciesA.fasta`, `02_speciesB.fasta`, ... The number sets the order of the
 species in the report and in the plots; the first file is the reference genome.
 
