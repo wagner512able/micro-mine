@@ -75,7 +75,7 @@ with tempfile.TemporaryDirectory() as d:
         cid, seq = read_fasta(os.path.join(d, "in", f))[0]
         if f.startswith("02_"):
             tgt = next(m for m in clusters[3].members if m.genome == 1)        # an SSR of species 02
-            seq = seq[:tgt.start - 40] + "NNN" + seq[tgt.start - 37:]
+            seq = seq[:tgt.start - 10] + "NNN" + seq[tgt.start - 7:]
         open(os.path.join(inn, f), "w").write(f">{cid}\n{seq}\n")
     gN, cN, sN = run(inn, os.path.join(d, "outN"), log=lambda *_: None)
     flagged = [m for c in cN for m in c.members if m.compromised]
