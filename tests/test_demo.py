@@ -68,30 +68,58 @@ with tempfile.TemporaryDirectory() as d:
         run(os.path.join(d, "in"), os.path.join(d, "out8"), flank=50, anchor=60, log=lambda *_: None); raise SystemExit("anchor > flank accepted")
     except ValueError:
         pass
-    # N bases: SSRs whose flanking region has N are flagged (cross in plots, WARNING_N in FASTA/GFF3, Excel column)
+
+    # N bases: SSRs whose flanking region has N are flagged
     from micromine.core import read_fasta, mine_genome as _mg
-    inn = os.path.join(d, "inN"); os.makedirs(inn)
+    inn = os.path.join(d, "inN")
+    os.makedirs(inn)
+
     for f in os.listdir(os.path.join(d, "in")):
         cid, seq = read_fasta(os.path.join(d, "in", f))[0]
         if f.startswith("02_"):
-            tgt = next(m for m in clusters[3].members if m.genome == 1)        # an SSR of species 02
+            tgt = next(m for m in clusters[3].members if m.genome == 1)
             seq = seq[:tgt.start - 40] + "NNN" + seq[tgt.start - 37:]
         open(os.path.join(inn, f), "w").write(f">{cid}\n{seq}\n")
+
     gN, cN, sN = run(inn, os.path.join(d, "outN"), log=lambda *_: None)
+
     flagged = [m for c in cN for m in c.members if m.compromised]
+
     print("Number of N bases in genome 02:",
-      next(g.n_count for g in gN if g.tag == "02"))
-print("SSRs with N in the flanking regions:",
-      [(s.canon, s.start, s.n_flank)
-       for s in sN if s.genome == 1 and s.n_flank > 0])
-print("SSRs detected in genome 02:",
-      sum(s.genome == 1 for s in sN))
-    assert len(flagged) >= 1 and all(m.genome == 1 and m.n_flank == 3 for m in flagged), flagged
-    assert "compromised_by_N_in=02" in open(os.path.join(d, "outN", "SSRs_with_flanks.fasta")).read()
-    assert "WARNING_N=3" in open(os.path.join(d, "outN", "fasta_per_species", "02_snps_flanco_SSRs.fasta")).read()
-    wbN = openpyxl.load_workbook(os.path.join(d, "outN", "micromine_report.xlsx"))
-    assert any(r[18] == "02" for r in wbN["SSR_comparison"].iter_rows(min_row=2, values_only=True))
-    assert "#c0392b" in open(os.path.join(d, "outN", "micromine_comparison.svg")).read()
+          next(g.n_count for g in gN if g.tag == "02"))
+
+    print("SSRs with N in the flanking regions:",
+          [(s.canon, s.start, s.n_flank)
+           for s in sN if s.genome == 1 and s.n_flank > 0])
+
+    print("SSRs detected in genome 02:",
+          sum(s.genome == 1 for s in sN))
+
+    assert len(flagged) >= 1 and all(
+        m.genome == 1 and m.n_flank == 3 for m in flagged
+    ), flagged
+
+    assert "compromised_by_N_in=02" in open(
+        os.path.join(d, "outN", "SSRs_with_flanks.fasta")
+    ).read()
+
+    assert "WARNING_N=3" in open(
+        os.path.join(d, "outN", "fasta_per_species", "02_snps_flanco_SSRs.fasta")
+    ).read()
+
+    wbN = openpyxl.load_workbook(
+        os.path.join(d, "outN", "micromine_report.xlsx")
+    )
+
+    assert any(
+        r[18] == "02"
+        for r in wbN["SSR_comparison"].iter_rows(min_row=2, values_only=True)
+    )
+
+    assert "#c0392b" in open(
+        os.path.join(d, "outN", "micromine_comparison.svg")
+    ).read()
+
     # characters other than A,C,G,T,N are rejected, listing every offending file
     bad = os.path.join(d, "bad"); os.makedirs(bad)
     for f in sorted(os.listdir(os.path.join(d, "in")))[:3]:
