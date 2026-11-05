@@ -79,6 +79,13 @@ with tempfile.TemporaryDirectory() as d:
         open(os.path.join(inn, f), "w").write(f">{cid}\n{seq}\n")
     gN, cN, sN = run(inn, os.path.join(d, "outN"), log=lambda *_: None)
     flagged = [m for c in cN for m in c.members if m.compromised]
+    print("Number of N bases in genome 02:",
+      next(g.n_count for g in gN if g.tag == "02"))
+print("SSRs with N in the flanking regions:",
+      [(s.canon, s.start, s.n_flank)
+       for s in sN if s.genome == 1 and s.n_flank > 0])
+print("SSRs detected in genome 02:",
+      sum(s.genome == 1 for s in sN))
     assert len(flagged) >= 1 and all(m.genome == 1 and m.n_flank == 3 for m in flagged), flagged
     assert "compromised_by_N_in=02" in open(os.path.join(d, "outN", "SSRs_with_flanks.fasta")).read()
     assert "WARNING_N=3" in open(os.path.join(d, "outN", "fasta_per_species", "02_snps_flanco_SSRs.fasta")).read()
