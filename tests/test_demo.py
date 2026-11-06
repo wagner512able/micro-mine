@@ -76,11 +76,11 @@ with tempfile.TemporaryDirectory() as d:
         cid, seq = read_fasta(os.path.join(d, "in", f))[0]
         if f.startswith("02_"):
             tgt = next(m for m in clusters[3].members if m.genome == 1)        # an SSR of species 02
-            seq = seq[:tgt.start - 20] + "NNN" + seq[tgt.start - 17:]
+            seq = seq[:tgt.start - 25] + "NNN" + seq[tgt.start - 22:]
         open(os.path.join(inn, f), "w").write(f">{cid}\n{seq}\n")
     
-    # Adicionamos flank=50 para garantir que a janela flanqueadora cubra os Ns injetados
-    gN, cN, sN = run(inn, os.path.join(d, "outN"), flank=50, log=lambda *_: None)
+    # Executa sem forçar flank=50 para respeitar a âncora predefinida de 60
+    gN, cN, sN = run(inn, os.path.join(d, "outN"), log=lambda *_: None)
     flagged = [m for c in cN for m in c.members if m.compromised]
     print("Number of N bases in genome 02:",
           next(g.n_count for g in gN if g.tag == "02"))
@@ -91,6 +91,10 @@ with tempfile.TemporaryDirectory() as d:
           sum(s.genome == 1 for s in sN))
     assert len(flagged) >= 1 and all(m.genome == 1 and m.n_flank == 3 for m in flagged), flagged
     assert "compromised_by_N_in=02" in open(os.path.join(d, "outN", "SSRs_with_flanks.fasta")).read()
+    assert "WARNING_N=3" in open(os.path.join(d, "outN", "fasta_per_species", "02_snps_flanco_SSRs.fasta")).read()
+    wbN = openpyxl.load_workbook(os.path.join(d, "outN", "micromine_report.xlsx"))
+    assert any(r[18] == "02" for r in wbN["SSR_comparison"].iter_rows(min_row=2, values_only=True))
+    assert "#c0392b" in open(os.path.join(d, "outN", "micromine_comparison.svg")).read()
     assert "WARNING_N=3" in open(os.path.join(d, "outN", "fasta_per_species", "02_snps_flanco_SSRs.fasta")).read()
     wbN = openpyxl.load_workbook(os.path.join(d, "outN", "micromine_report.xlsx"))
     assert any(r[18] == "02" for r in wbN["SSR_comparison"].iter_rows(min_row=2, values_only=True))
