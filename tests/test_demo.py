@@ -71,7 +71,7 @@ with tempfile.TemporaryDirectory() as d:
     # N bases: SSRs whose flanking region has N are flagged (cross in plots, WARNING_N in FASTA/GFF3, Excel column)
     from micromine.core import read_fasta, mine_genome as _mg
     inn = os.path.join(d, "inN"); os.makedirs(inn)
-    for f in os.listdir(os.path.join(d, "in")):
+for f in os.listdir(os.path.join(d, "in")):
         cid, seq = read_fasta(os.path.join(d, "in", f))[0]
         if f.startswith("02_"):
             tgt = next(m for m in clusters[3].members if m.genome == 1)        # an SSR of species 02
