@@ -76,16 +76,13 @@ with tempfile.TemporaryDirectory() as d:
         cid, seq = read_fasta(os.path.join(d, "in", f))[0]
         if f.startswith("02_"):
             tgt = next(m for m in clusters[3].members if m.genome == 1)        # an SSR of species 02
-            # Posiciona os Ns a 15 bases antes do início do SSR (garantindo que ficam dentro da janela de flanco)
-            seq = seq[:tgt.start - 15] + "NNN" + seq[tgt.start - 12:]
+            idx = tgt.start - 1  # Conversão de 1-based para índice 0-based do Python
+            seq = seq[:idx - 10] + "NNN" + seq[idx - 7:]  # Inserção a 10 bases antes (garantido dentro do flanco)
         open(os.path.join(inn, f), "w").write(f">{cid}\n{seq}\n")
     gN, cN, sN = run(inn, os.path.join(d, "outN"), log=lambda *_: None)
     flagged = [m for c in cN for m in c.members if m.compromised]
     print("Number of N bases in genome 02:",
           next(g.n_count for g in gN if g.tag == "02"))
-    print("SSRs with N in the flanking regions:",
-          [(s.canon, s.start, s.n_flank)
-           for s in sN if s.genome == 1 and s.n_flank > 0])
     print("SSRs detected in genome 02:",
           sum(s.genome == 1 for s in sN))
     assert len(flagged) >= 1 and all(m.genome == 1 and m.n_flank == 3 for m in flagged), flagged
