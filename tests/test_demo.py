@@ -70,13 +70,14 @@ with tempfile.TemporaryDirectory() as d:
         pass
     # N bases: SSRs whose flanking region has N are flagged (cross in plots, WARNING_N in FASTA/GFF3, Excel column)
     from micromine.core import read_fasta, mine_genome as _mg
-    inn = os.path.join(d, "inN"); os.makedirs(inn, exist_ok=True)
+    inn = os.path.join(d, "inN")
+    os.makedirs(inn, exist_ok=True)
     for f in os.listdir(os.path.join(d, "in")):
         cid, seq = read_fasta(os.path.join(d, "in", f))[0]
         if f.startswith("02_"):
             tgt = next(m for m in clusters[3].members if m.genome == 1)        # an SSR of species 02
-            idx = tgt.start - 1  # Conversão correta de 1-based para 0-based (Python)
-            seq = seq[:idx - 20] + "NNN" + seq[idx - 17:]
+            # Posiciona os Ns a 15 bases antes do início do SSR (garantindo que ficam dentro da janela de flanco)
+            seq = seq[:tgt.start - 15] + "NNN" + seq[tgt.start - 12:]
         open(os.path.join(inn, f), "w").write(f">{cid}\n{seq}\n")
     gN, cN, sN = run(inn, os.path.join(d, "outN"), log=lambda *_: None)
     flagged = [m for c in cN for m in c.members if m.compromised]
