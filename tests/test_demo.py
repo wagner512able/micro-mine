@@ -76,10 +76,9 @@ with tempfile.TemporaryDirectory() as d:
         cid, seq = read_fasta(os.path.join(d, "in", f))[0]
         if f.startswith("02_"):
             tgt = next(m for m in clusters[3].members if m.genome == 1)        # an SSR of species 02
-            seq = seq[:tgt.start - 25] + "NNN" + seq[tgt.start - 22:]
+            seq = seq[:tgt.start - 20] + "NNN" + seq[tgt.start - 17:]
         open(os.path.join(inn, f), "w").write(f">{cid}\n{seq}\n")
     
-    # Executa sem forçar flank=50 para respeitar a âncora predefinida de 60
     gN, cN, sN = run(inn, os.path.join(d, "outN"), log=lambda *_: None)
     flagged = [m for c in cN for m in c.members if m.compromised]
     print("Number of N bases in genome 02:",
