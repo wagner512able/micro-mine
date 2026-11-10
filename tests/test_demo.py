@@ -80,17 +80,12 @@ with tempfile.TemporaryDirectory() as d:
             seq = seq[:idx - 10] + "NNN" + seq[idx - 7:]  # Inserção a 10 bases antes (garantido dentro do flanco)
         open(os.path.join(inn, f), "w").write(f">{cid}\n{seq}\n")
     gN, cN, sN = run(inn, os.path.join(d, "outN"), log=lambda *_: None)
-    flagged = [m for c in cN for m in c.members if m.compromised]
-    print("Number of N bases in genome 02:",
-          next(g.n_count for g in gN if g.tag == "02"))
-    print("SSRs detected in genome 02:",
-          sum(s.genome == 1 for s in sN))
-    assert len(flagged) >= 1 and all(m.genome == 1 and m.n_flank == 3 for m in flagged), flagged
-    assert "compromised_by_N_in=02" in open(os.path.join(d, "outN", "SSRs_with_flanks.fasta")).read()
-    assert "WARNING_N=3" in open(os.path.join(d, "outN", "fasta_per_species", "02_snps_flanco_SSRs.fasta")).read()
-    wbN = openpyxl.load_workbook(os.path.join(d, "outN", "micromine_report.xlsx"))
-    assert any(r[18] == "02" for r in wbN["SSR_comparison"].iter_rows(min_row=2, values_only=True))
-    assert "#c0392b" in open(os.path.join(d, "outN", "micromine_comparison.svg")).read()
+    # SSRs with N in their saved flanks are EXCLUDED (not reported): none can be flagged as compromised
+    assert not [m for c in cN for m in c.members if m.compromised]
+    n_ref = sum(1 for c in clusters for m in c.members if m.genome == 1)                      # species 02 without N (baseline run)
+    n_N = sum(1 for m in sN if m.genome == 1)
+    assert gN[1].n_count == 3 and n_N < n_ref, (gN[1].n_count, n_N, n_ref)   # the SSR next to the Ns disappeared
+    assert all(m.n_flank == 0 for m in sN)
     # characters other than A,C,G,T,N are rejected, listing every offending file
     bad = os.path.join(d, "bad"); os.makedirs(bad, exist_ok=True)
     for f in sorted(os.listdir(os.path.join(d, "in")))[:3]:
