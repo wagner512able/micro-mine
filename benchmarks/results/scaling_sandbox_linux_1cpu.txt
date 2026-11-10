@@ -1,0 +1,22 @@
+# machine: Linux-6.18.44-fc-v310-x86_64-with-glibc2.39 | x86_64 | 1 logical CPUs | python 3.12.3 | repeats=1 (median time, max memory)
+
+# A) number of genomes (155055 bp each)
+genomes	seconds	peak_MB	SSRs	loci
+2	0.2	52	131	64
+5	0.7	55	314	67
+10	1.5	60	622	73
+25	4.1	76	1587	79
+50	10.1	104	3166	90
+
+# B) genome size (synthetic): annotation of one genome / comparison of two genomes
+size_Mb	mode	seconds	peak_MB	SSRs	loci
+0.5	annotation	0.1	50	73	0
+0.5	comparison(2)	0.5	53	138	73
+1	annotation	0.3	52	147	0
+1	comparison(2)	1.2	58	290	149
+2	annotation	0.5	55	265	0
+2	comparison(2)	2.4	66	516	271
+3	annotation	0.8	60	428	0
+3	comparison(2)	4.0	77	850	443
+5	annotation	1.6	67	709	0
+5	comparison(2)	7.3	94	1388	720
