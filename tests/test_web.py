@@ -49,7 +49,7 @@ for _ in range(120):
 assert st["status"] == "done", st
 s = st["summary"]; assert s["loci"] >= 13 and s["exclusive_real"] == 1 and len(s["genomes"]) == 4
 assert s["genomes"][1]["name"] == "snps_flank"
-assert s["compromised_loci"] >= 1 and s["genomes"][1]["n_bases"] == 5 and s["genomes"][1]["compromised"] >= 1
+assert s["compromised_loci"] == 0 and s["genomes"][1]["n_bases"] == 5     # SSRs next to N are excluded, not flagged
 assert "micromine_report.xlsx" in s["files"] and "micromine_region_1000-8000.svg" in s["files"]
 assert c.get(f"/results/{job}/micromine_comparison.svg").status_code == 200
 z = c.get(f"/download/{job}.zip"); assert z.status_code == 200
