@@ -1,4 +1,4 @@
-"""THANNYA for serverless hosting (Vercel): stateless and synchronous.
+"""THANNYA for serverless hosting (Render): stateless and synchronous.
 
 Nothing is kept between requests: the browser sends the genomes (gzip-compressed JSON), the
 function analyses them in a temporary folder and returns the results in the same response
