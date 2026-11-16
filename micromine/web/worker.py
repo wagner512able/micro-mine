@@ -10,7 +10,7 @@ import os
 import sys
 
 from micromine.cli import run
-from micromine.web.common import build_summary
+from micromine.web.common import MAX_FILES, build_summary
 
 
 def main(job_dir: str) -> int:
@@ -26,7 +26,7 @@ def main(job_dir: str) -> int:
         genomes, clusters, ssrs = run(
             os.path.join(job_dir, "input"), out,
             {int(k): int(v) for k, v in p["min_repeats"].items()},
-            flank=p["flank"], anchor=p["anchor"], similarity=p["similarity"], max_files=50,
+            flank=p["flank"], anchor=p["anchor"], similarity=p["similarity"], max_files=MAX_FILES,
             threads=1, pdf=pdf, relax=p["relax"], regions=[tuple(r) for r in p["regions"]],
             input_label="uploaded files (web)",
             fasta_layout=tuple(p.get("fasta_layout", ())), ssr_case=p.get("ssr_case", "lower"),

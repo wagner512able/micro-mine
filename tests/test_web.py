@@ -10,7 +10,7 @@ d = tempfile.mkdtemp(); build(d)
 names = sorted(os.listdir(d))
 c = app.test_client()
 assert c.get("/").status_code == 200 and b"MICRO-MINE" in c.get("/").data and b"wagner2@egresso.ufg.br" in c.get("/").data and c.get("/static/logo.jpg").status_code == 200
-cfg = c.get("/api/config").get_json(); assert cfg["max_files"] == 50
+cfg = c.get("/api/config").get_json(); assert cfg["max_files"] == 30 and cfg["max_file_mb"] == 1
 
 
 def post(files, labels=None, params=None):
@@ -21,6 +21,8 @@ def post(files, labels=None, params=None):
 
 good = [(n, open(os.path.join(d, n), "rb").read()) for n in names]
 # validation
+assert post([(f"g{i}.fasta", b">x\nACGT\n") for i in range(31)]).status_code == 400  # web limit: 30 files
+assert post([("large.fasta", b">x\nACGT\n" + b" " * (1024 * 1024))]).status_code == 400  # web limit: 1 MB/file
 assert post([]).status_code == 400                                             # needs >= 1 file
 assert post([("a.txt", b">x\nACGT\n")] * 2).status_code == 400                 # extension
 assert post([("a.fasta", b">x\nACGT123\n")] * 2).status_code == 400            # invalid characters
@@ -49,12 +51,18 @@ for _ in range(120):
 assert st["status"] == "done", st
 s = st["summary"]; assert s["loci"] >= 13 and s["exclusive_real"] == 1 and len(s["genomes"]) == 4
 assert s["genomes"][1]["name"] == "snps_flank"
-assert s["compromised_loci"] == 0 and s["genomes"][1]["n_bases"] == 5     # SSRs next to N are excluded, not flagged
+assert s["compromised_loci"] >= 1 and s["genomes"][1]["n_bases"] == 5     # valid SSRs retained; flanks flagged
 assert "micromine_report.xlsx" in s["files"] and "micromine_region_1000-8000.svg" in s["files"]
 assert c.get(f"/results/{job}/micromine_comparison.svg").status_code == 200
 z = c.get(f"/download/{job}.zip"); assert z.status_code == 200
-names_z = zipfile.ZipFile(io.BytesIO(z.data)).namelist(); assert "micromine_report.xlsx" in names_z
+zfile = zipfile.ZipFile(io.BytesIO(z.data))
+names_z = zfile.namelist(); assert "micromine_report.xlsx" in names_z and "N_flank_warnings.tsv" in names_z
 assert any(n.startswith("fasta_per_locus/") for n in names_z) and not any(n.startswith("fasta_per_species/") for n in names_z)
+for fn in names_z:
+    if fn.lower().endswith((".fasta", ".fa", ".fna")):
+        fasta_text = zfile.read(fn).decode()
+        seq_text = "".join(line for line in fasta_text.splitlines() if line and not line.startswith(">"))
+        assert "N" not in seq_text.upper(), (fn, fasta_text)
 assert s["fasta_per_locus"] == s["loci"] and s["fasta_per_species"] == 0
 import openpyxl
 wb = openpyxl.load_workbook(io.BytesIO(zipfile.ZipFile(io.BytesIO(z.data)).read("micromine_report.xlsx")))
@@ -72,5 +80,7 @@ a = st1["summary"]; assert a["mode"] == "annotation" and a["ssrs"] >= 12 and set
 z1 = zipfile.ZipFile(io.BytesIO(c.get(f"/download/{job1}.zip").data))
 gff = z1.read("micromine_SSRs.gff3").decode().strip().split("\n")
 assert gff[0] == "##gff-version 3" and sum(1 for l in gff if not l.startswith("#")) == a["ssrs"]
-fa = z1.read("SSRs_with_flanks.fasta").decode(); assert "flank=75/75" in fa and fa.count(">") == a["ssrs"]
+fa = z1.read("SSRs_with_flanks.fasta").decode(); assert "flank=75/75" in fa
+assert "N" not in "".join(line for line in fa.splitlines() if line and not line.startswith(">"))
+assert "N_flank_warnings.tsv" in z1.namelist()
 print("OK: web app validated; job finished with", s["loci"], "loci.")

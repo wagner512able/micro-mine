@@ -88,7 +88,7 @@ def write_xlsx(path, genomes, clusters, ssrs, params, ssr_case="lower"):
                    variation_type(c, n), variation_text(c, genomes),
                    max(len(v) for v in c.by_genome().values()),
                    ",".join(genomes[g].tag for g in compromised_genomes(c)), _notes(c, n),
-                   case_flanked(r, ssr_case)])
+                   case_flanked(r, ssr_case) if not r.compromised else ""])
     _finish(ws, {16: 30, 17: 55, 20: 50, 21: 60})
 
     wp = wb.create_sheet("Presence_Absence")
@@ -111,7 +111,8 @@ def write_xlsx(path, genomes, clusters, ssrs, params, ssr_case="lower"):
         for m, sit in sorted(rows, key=lambda x: (x[0].genome, x[0].contig, x[0].start)):
             g = genomes[m.genome]
             wo.append([c.id, g.tag, g.name, m.contig, m.start, m.end, m.motif, m.reps, len(m.seq), m.tail,
-                       "+" if m.orient == 1 else "-", sit, m.n_flank, case_flanked(m, ssr_case)])
+                       "+" if m.orient == 1 else "-", sit, m.n_flank,
+                       case_flanked(m, ssr_case) if not m.compromised else ""])
     _finish(wo, {14: 60})
 
     wr = wb.create_sheet("Summary")
@@ -246,6 +247,8 @@ def write_fastas(outdir, genomes, clusters, layouts=("species", "locus", "consol
         for g in genomes:
             with open(os.path.join(per, f"{g.label}_SSRs.fasta"), "w") as fh:
                 for m in sorted(by_g[g.idx], key=lambda x: (x.contig, x.start)):
+                    if m.compromised:
+                        continue
                     fh.write(f">{m.cluster}|{g.label}|{m.contig}:{m.start}-{m.end}|({m.motif}){m.reps}|repeats={m.reps}"
                              f"|flank={len(m.left)}/{len(m.right)}|{_pos_tag(len(m.left), len(m.region))}"
                              f"{_partial_tag(m)}{_n_tag(m)}\n{_wrap(case_flanked(m, ssr_case))}\n")
@@ -255,6 +258,8 @@ def write_fastas(outdir, genomes, clusters, layouts=("species", "locus", "consol
         for c in clusters:
             with open(os.path.join(per, f"{c.id}_{c.cls}_{c.canon}.fasta"), "w") as fh:
                 for m in sorted(c.members, key=lambda x: (x.genome, x.contig, x.start)):
+                    if m.compromised:
+                        continue
                     seq, lleft, strand = case_flanked(m, ssr_case), len(m.left), "+"
                     if m.orient == -1:
                         seq, lleft, strand = revcomp(seq), len(m.right), "-"
@@ -264,12 +269,29 @@ def write_fastas(outdir, genomes, clusters, layouts=("species", "locus", "consol
     if "consolidated" in layouts:
         with open(os.path.join(outdir, "SSRs_with_flanks.fasta"), "w") as fh:
             for c in clusters:
-                r = c.ref
+                # Use a clean copy as the representative; never emit N-containing flanks.
+                r = next((m for m in c.members if not m.compromised), None)
+                if r is None:
+                    continue
                 pres = ",".join(genomes[i].tag for i in c.genomes)
                 fh.write(f">{c.id}|({c.canon}){r.reps}|repeats={r.reps}|ref={genomes[r.genome].label}|"
                          f"{r.contig}:{r.start}-{r.end}|repeats_by_species={_rep_header(c, genomes)}|present_in={pres}|"
                          f"{_pos_tag(len(r.left), len(r.region))}{_partial_tag(r)}{_n_tag(r)}{_comp_tag(c, genomes)}\n"
                          f"{_wrap(case_flanked(r, ssr_case))}\n")
+
+
+def write_n_flank_warnings(path, genomes, ssrs):
+    """Write every valid SSR whose requested flanking window contains ambiguous N bases."""
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.write("File\tSpecies\tSSR_ID\tContig\tStart\tEnd\tMotif\tRepeats\tN_left_flank\tN_right_flank\tN_total\tStatus\n")
+        for m in sorted((x for x in ssrs if x.compromised), key=lambda x: (x.genome, x.contig, x.start)):
+            g = genomes[m.genome]
+            n_left = m.left.upper().count("N")
+            n_right = m.right.upper().count("N")
+            fh.write("\t".join(map(str, [g.tag, g.name, m.cluster, m.contig, m.start, m.end, m.motif,
+                                             m.reps, n_left, n_right, m.n_flank,
+                                             "SSR annotated; flanked sequence withheld"])))
+            fh.write("\n")
 
 
 def write_exclusive_fasta(outdir, genomes, clusters, mode="species", single_copy=False,
@@ -297,6 +319,8 @@ def write_exclusive_fasta(outdir, genomes, clusters, mode="species", single_copy
         if single_copy and len(copies) > 1:
             continue
         for m in copies:
+            if m.compromised:
+                continue
             key = genomes[gi].label if mode == "species" else f"{genomes[gi].label}__{_safe(m.contig)}"
             groups.setdefault(key, []).append((m, c, kind, len(copies), genomes[gi].label))
     if not groups:

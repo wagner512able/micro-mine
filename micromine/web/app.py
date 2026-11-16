@@ -4,7 +4,7 @@ Run for development:   python -m micromine.web.app
 Run in production:     gunicorn -w 1 --threads 8 -b 0.0.0.0:8000 micromine.web.app:app
 
 Limits (environment variables):
-  MICROMINE_MAX_FILE_MB      max size of each FASTA (default 10)
+  MICROMINE_MAX_FILE_MB      max size of each FASTA (default 1)
   MICROMINE_MAX_GENOME_BP    max genome length per file (default 1,000,000; organelles only)
   MICROMINE_MAX_CONCURRENT   analyses running at the same time (default 2)
   MICROMINE_JOB_TTL_HOURS    hours before results are deleted (default 24)
@@ -30,10 +30,9 @@ from flask import Flask, abort, jsonify, request, send_from_directory
 
 from .. import __version__
 from ..core import CLASS_NAMES, DEFAULT_MIN_REPEATS
-from .common import (FASTA_EXT as _FASTA_EXT, MAX_CONTIGS, MAX_FILES, MAX_GENOME_BP, MIN_FILES, REPO_URL,
+from .common import (FASTA_EXT as _FASTA_EXT, MAX_CONTIGS, MAX_FILES, MAX_FILE_MB, MAX_GENOME_BP, MIN_FILES, REPO_URL,
                      parse_params as _parse_params, validate_uploads)
 
-MAX_FILE_MB = int(os.environ.get("MICROMINE_MAX_FILE_MB", "10"))
 MAX_CONCURRENT = int(os.environ.get("MICROMINE_MAX_CONCURRENT", "2"))
 JOB_TTL_H = float(os.environ.get("MICROMINE_JOB_TTL_HOURS", "24"))
 JOBS_PER_HOUR = int(os.environ.get("MICROMINE_JOBS_PER_HOUR", "20"))

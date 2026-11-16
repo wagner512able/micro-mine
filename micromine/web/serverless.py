@@ -23,9 +23,8 @@ from flask import Flask, jsonify, request
 from .. import __version__
 from ..cli import run
 from ..core import CLASS_NAMES, DEFAULT_MIN_REPEATS
-from .common import MAX_FILES, MAX_GENOME_BP, MIN_FILES, REPO_URL, build_summary, parse_params, validate_uploads
+from .common import MAX_FILES, MAX_FILE_MB, MAX_GENOME_BP, MIN_FILES, REPO_URL, build_summary, parse_params, validate_uploads
 
-MAX_FILE_MB = 10
 MAX_PAYLOAD_MB = 4.2                 # compressed upload accepted by the page (Vercel allows 4.5 MB)
 MAX_RAW = 60 * 1024 * 1024           # decompressed size accepted by the function (zip-bomb guard)
 RESPONSE_LIMIT = int(4.2 * 1024 * 1024)

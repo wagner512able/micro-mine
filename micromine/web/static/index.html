@@ -428,7 +428,7 @@ function showResults(s) {
   const zip = el('a', 'Download all (ZIP)', 'main');
   if (cfg.mode === 'serverless') { zip.href = blobUrls['micromine_results.zip']; zip.download = 'micromine_results.zip'; } else zip.href = 'download/' + job + '.zip';
   dl.appendChild(zip);
-  const names = { 'micromine_report.xlsx': 'Excel report', 'SSRs_with_flanks.fasta': 'SSRs + flanks (FASTA)', 'micromine_SSRs.gff3': 'GFF3 annotation' };
+  const names = { 'micromine_report.xlsx': 'Excel report', 'SSRs_with_flanks.fasta': 'SSRs + flanks (FASTA)', 'micromine_SSRs.gff3': 'GFF3 annotation', 'N_flank_warnings.tsv': 'Warnings: N in flanking regions' };
   s.files.forEach(f => {
     const label = names[f] || (/\.(svg|pdf)$/.test(f) ? f.replace('micromine_', '') : null);
     if (!label) return;

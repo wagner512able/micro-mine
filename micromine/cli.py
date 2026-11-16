@@ -12,7 +12,7 @@ from .core import (CLASS_NAMES, DEFAULT_MIN_REPEATS, cluster_ssrs, discover_geno
                    find_subthreshold, is_variable, mine_genome, number_clusters, relaxed_mins)
 from .annotate import run_annotation
 from .plot import plot_svg, svg_to_pdf
-from .report import write_exclusive_fasta, write_fastas, write_xlsx
+from .report import write_exclusive_fasta, write_fastas, write_xlsx, write_n_flank_warnings
 
 
 def _parse_region(text):
@@ -85,6 +85,10 @@ def run(input_dir, output_dir, min_repeats=None, flank=150, anchor=60, similarit
     params.update({f"Relaxed min. repeats {CLASS_NAMES[k]}": v for k, v in relaxed_mins(mins, relax).items()})
     write_xlsx(os.path.join(output_dir, "micromine_report.xlsx"), genomes, clusters, ssrs, params, ssr_case)
     write_fastas(output_dir, genomes, clusters, fasta_layout, ssr_case)
+    write_n_flank_warnings(os.path.join(output_dir, "N_flank_warnings.tsv"), genomes, ssrs)
+    n_compromised = sum(1 for s in ssrs if s.compromised)
+    if n_compromised:
+        log(f"[warning] {n_compromised} valid SSR(s) have N in their flanks; annotations retained, flanked FASTA sequences withheld. See N_flank_warnings.tsv.")
     if exclusive_fasta in ("species", "contig"):
         n_ex, n_files = write_exclusive_fasta(output_dir, genomes, clusters, exclusive_fasta, exclusive_single_copy,
                                               exclusive_threshold, ssr_case)

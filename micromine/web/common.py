@@ -12,7 +12,8 @@ from collections import Counter
 from ..core import CLASS_NAMES, DEFAULT_MIN_REPEATS, VARIATION_TYPES, compromised_genomes, exclusivity, \
     format_bad, is_polymorphic, variation_type
 
-MAX_FILES = 50
+MAX_FILES = 30
+MAX_FILE_MB = int(os.environ.get("MICROMINE_MAX_FILE_MB", "1"))
 MIN_FILES = 1
 MAX_CONTIGS = 2000
 MAX_GENOME_BP = int(os.environ.get("MICROMINE_MAX_GENOME_BP", "1000000"))

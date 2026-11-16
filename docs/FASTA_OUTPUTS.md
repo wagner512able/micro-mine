@@ -7,14 +7,16 @@ GFF3) count full units only, as MISA does, so results stay comparable; the extra
 *Partial unit* and in the header field `partial=`. The right flank starts after the partial unit.
 
 ## Header fields
-`>SSR.012|01_species|contig:start-end|(AAG)6|repeats=6|flank=150/150|ssr_in_seq=151-168|partial=T|WARNING_N=3`
+
+Only sequences with N-free flanking regions are written to FASTA. Valid SSRs whose flanks contain N remain in the annotation tables and GFF3, but their sequence records are withheld; see `N_flank_warnings.tsv` for coordinates and N counts.
+
+`>SSR.012|01_species|contig:start-end|(AAG)6|repeats=6|flank=150/150|ssr_in_seq=151-168|partial=T`
 
 | Field | Meaning |
 |---|---|
 | `(AAG)6` and `repeats=6` | motif as found and number of full repeat units |
 | `ssr_in_seq=151-168` | position of the whole highlighted tract inside the sequence (1-based); use it as the primer3 target |
 | `partial=T` | incomplete unit included in the highlighted tract (only when present) |
-| `WARNING_N=3` | N bases in the flanks (unreliable boundaries/primers) |
 | `repeats_by_species=01:6,02:7,03:3(below_threshold)` | consolidated file: repeat number of the locus in every species |
 | `exclusive=real` / `threshold_only` | exclusive-SSR files: kind of exclusivity |
 | `locus_copies=1` | copies of the locus in that species (genome in single-genome mode) |

@@ -3,8 +3,8 @@
 # MICRO-MINE
 
 Mining, annotation and comparison of microsatellites (SSRs) in **organellar genomes** (chloroplast of
-plants/algae, mitochondria of animals). Give it **one FASTA** to annotate its SSRs or **2-50 FASTA files** to compare
-them across species: shared, absent, longer/shorter and exclusive SSRs, with flanking regions ready for primer design.
+plants/algae, mitochondria of animals). Give it **one FASTA** to annotate its SSRs or **2 or more FASTA files** to compare
+them across species (up to 30 files on the web; locally, the CLI defaults to 50 and can be raised with `--max-files`): shared, absent, longer/shorter and exclusive SSRs, with flanking regions ready for primer design.
 
 ![MICRO-MINE results page](docs/micromine_variable_markers.jpg)
 
@@ -16,9 +16,9 @@ them across species: shared, absent, longer/shorter and exclusive SSRs, with fla
 
 ## Deployments
 * **GitHub + Render (free, online lite)**: see https://micro-mine.onrender.com
-  Stateless: about 4 MB of compressed FASTA and 60 s per analysis; nothing is stored on the server.
+  Web limits: up to 30 FASTA files, 1 MB per file and 1,000,000 bp per genome. The serverless deployment also has a separate compressed-request limit of about 4.2 MB.
 * **Docker / own server (full)**: `docker build -t micromine . && docker run -p 8000:8000 micromine`.
-  Background jobs, 10 MB per file, PDF figures, results kept for 24 h.
+  Background jobs, the same 30-file / 1 MB-per-file upload limits, PDF figures and results kept for 24 h.
 
 ## Citation
 See [CITATION.cff](CITATION.cff). License: MIT (see `LICENSE`).
@@ -74,12 +74,14 @@ Only **A, C, G, T and N** (any case) are accepted. Files containing any other ch
 such as R/Y, U, gaps, digits, protein sequence...) are rejected: the web page scans each file when it is
 added, flags the offending files in red with the characters found and blocks the run until they are
 fixed or removed (the server checks again; the command line applies the same rule and lists every
-offending file). N bases are allowed but never part of an SSR, so an N next to a repeat can truncate
-it or hide it. Every SSR with N in its saved flanking region is therefore marked as **compromised**:
-a red cross in the figures (with legend), `WARNING_N=<count>` in the FASTA headers,
-`compromised_by_N` in the GFF3, the columns *Compromised by N in* / *N bases in flanks* in the Excel
-report and a note in the *Notes* column. The *Summary* sheet also gives the number of N bases per
-genome and of SSRs compromised by N.
+offending file). N bases are accepted but are never part of an annotated SSR. A repeat tract containing N is not
+annotated. If the SSR itself is valid but its requested left or right flanking window contains N,
+the SSR annotation is retained and marked as **compromised** (red cross in the figures;
+`compromised_by_N` in GFF3; *Compromised by N* / *N bases in flanks* in Excel). To prevent
+unsafe primer-design input, that record is omitted from every flanked-sequence FASTA export, and
+its coordinates and left/right N counts are listed in `N_flank_warnings.tsv`. The CLI and web
+logs also report how many valid SSRs had their flanked sequences withheld. The *Summary* sheet
+reports the number of N bases per genome and SSRs compromised by N.
 
 ## Single-genome annotation mode
 With a single FASTA (`micromine -i genome.fasta -o out`, or one file uploaded to the web page) there is
@@ -148,20 +150,22 @@ interpolation between shared neighbouring loci.
   exclusives and polymorphisms) and `micromine_region_START-END.svg` (zoom); `.pdf` with `--pdf`
 
 ## Web version (server with background jobs)
+
+The public web interface accepts at most **30 FASTA files**, each no larger than **1 MB** (and up to 1,000,000 bp). For larger batches or files, use the local command-line version. The CLI defaults to 50 files and its `--max-files` option can raise that limit as needed.
     pip install -e ".[web,pdf]"
     micromine-web --port 8000                    # development server
     gunicorn -w 1 --threads 8 -b 0.0.0.0:8000 micromine.web.app:app    # production
     # or: docker build -t micromine . && docker run -p 8000:8000 -v micromine_data:/data micromine
 
-Open the page, drop 1 to 50 FASTA files (1 = SSR annotation only), reorder them (the order becomes the `NN_` prefixes),
+Open the page, drop 1 to 30 FASTA files (1 = SSR annotation only), reorder them (the order becomes the `NN_` prefixes),
 edit the species labels, set the thresholds and run. Results (ZIP, Excel, SVG/PDF figures, FASTAs)
 are shown in the page and kept for 24 h. The server accepts organellar genomes only
-(default: 10 MB and 1,000,000 bp per file). Each analysis runs in its own subprocess, with a
+(default: 1 MB and 1,000,000 bp per file). Each analysis runs in its own subprocess, with a
 15-minute limit, at most 2 at a time and 20 analyses per IP per hour. Contig names are sanitized
 (prevents spreadsheet-formula injection) and job IDs are random 128-bit tokens. Limits can be
 changed with `MICROMINE_MAX_FILE_MB`, `MICROMINE_MAX_GENOME_BP`, `MICROMINE_MAX_CONCURRENT`,
 `MICROMINE_JOB_TTL_HOURS`, `MICROMINE_JOBS_PER_HOUR` and `MICROMINE_WORKDIR`. For a public
-deployment put it behind HTTPS (e.g. nginx) with a request-size limit of ~520 MB and keep
+deployment put it behind HTTPS (e.g. nginx) with a request-size limit of ~35 MB and keep
 `gunicorn -w 1` (concurrency control is per process).
 
 ## Known limitations of the prototype

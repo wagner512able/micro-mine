@@ -14,7 +14,7 @@ from openpyxl import Workbook
 from . import __author__, __contact__, __version__
 from .core import CLASS_NAMES, case_flanked, cluster_ssrs, mine_genome
 from .plot import plot_annotation_svg, svg_to_pdf
-from .report import _finish, _partial_tag, _n_tag, _pos_tag, _safe, _seq_header, _wrap
+from .report import _finish, _partial_tag, _n_tag, _pos_tag, _safe, _seq_header, _wrap, write_n_flank_warnings
 
 
 def number_ssrs(ssrs):
@@ -53,7 +53,7 @@ def write_annotation_xlsx(path, genome, ssrs, mins, params, ssr_case="lower", in
         ws.append([s.cluster, s.contig, s.start, s.end, len(s.seq), s.cls, s.canon, s.motif, s.reps,
                    len(s.left), len(s.right), s.n_flank, "Yes" if s.compromised else "No",
                    (info or {}).get(id(s), ("", ""))[0], (info or {}).get(id(s), ("", ""))[1], s.tail,
-                   case_flanked(s, ssr_case)])
+                   case_flanked(s, ssr_case) if not s.compromised else ""])
     _finish(ws, {17: 60})
 
     wsum = wb.create_sheet("Summary")
@@ -108,7 +108,7 @@ def write_gff3(path, genome, ssrs, info=None):
         for s in ssrs:
             attrs = (f"ID={s.cluster};Name=({s.motif}){s.reps};motif={s.motif};canonical_motif={s.canon};"
                      f"repeats={s.reps};class={s.cls};length={len(s.seq)}"
-                     + (f";compromised_by_N={s.n_flank}" if s.n_flank else "")
+                     + (f";compromised_by_N={s.n_flank};n_left_flank={s.left.upper().count('N')};n_right_flank={s.right.upper().count('N')}" if s.n_flank else "")
                      + (f";partial_unit={s.tail}" if s.tail else "")
                      + (f";locus_copies={info[id(s)][0]}" if info and id(s) in info else ""))
             fh.write("\t".join([q(s.contig), "MicroMine", "microsatellite", str(s.start), str(s.end),
@@ -125,6 +125,8 @@ def _annotation_record(genome, s, ssr_case, info=None, extra=""):
 def write_annotation_fasta(path, genome, ssrs, ssr_case="lower", info=None):
     with open(path, "w") as fh:
         for s in ssrs:
+            if s.compromised:
+                continue
             fh.write(_annotation_record(genome, s, ssr_case, info))
 
 
@@ -132,7 +134,7 @@ def write_unique_fasta(outdir, genome, ssrs, info, mode="species", ssr_case="low
     """FASTA with only the SSRs of single-copy loci (no similar locus anywhere else in the genome): the safest
     candidates for primer design. mode 'species': one file; mode 'contig': one file per contig.
     Returns (number of SSRs, number of files)."""
-    keep = [s for s in ssrs if info.get(id(s), (0,))[0] == 1]
+    keep = [s for s in ssrs if info.get(id(s), (0,))[0] == 1 and not s.compromised]
     if mode not in ("species", "contig") or not keep:
         return 0, 0
     if mode == "species":
@@ -171,6 +173,10 @@ def run_annotation(genome, output_dir, mins, flank=150, pdf=False, ssr_case="low
     params.update({f"Min. repeats {name}": mins[k] for k, name in CLASS_NAMES.items()})
     write_annotation_xlsx(os.path.join(output_dir, "micromine_report.xlsx"), genome, ssrs, mins, params, ssr_case, info)
     write_gff3(os.path.join(output_dir, "micromine_SSRs.gff3"), genome, ssrs, info)
+    write_n_flank_warnings(os.path.join(output_dir, "N_flank_warnings.tsv"), [genome], ssrs)
+    n_compromised = sum(1 for s in ssrs if s.compromised)
+    if n_compromised:
+        log(f"  [warning] {n_compromised} valid SSR(s) have N in their flanks; annotations retained, flanked FASTA sequences withheld. See N_flank_warnings.tsv.")
     if fasta_layout:
         write_annotation_fasta(os.path.join(output_dir, "SSRs_with_flanks.fasta"), genome, ssrs, ssr_case, info)
     if exclusive_fasta in ("species", "contig"):

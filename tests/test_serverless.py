@@ -8,7 +8,7 @@ from micromine.web.serverless import app
 d = tempfile.mkdtemp(); build(d)
 files = [{"name": n, "label": n.split("_", 1)[1][:-6], "text": open(os.path.join(d, n)).read()} for n in sorted(os.listdir(d))]
 c = app.test_client()
-cfg = c.get("/api/config").get_json(); assert cfg["mode"] == "serverless" and cfg["max_files"] == 50
+cfg = c.get("/api/config").get_json(); assert cfg["mode"] == "serverless" and cfg["max_files"] == 30 and cfg["max_file_mb"] == 1
 
 
 def post(payload, gz=True):
@@ -18,6 +18,8 @@ def post(payload, gz=True):
     return c.post("/api/analyze", data=body, content_type="application/json")
 
 # validation
+assert post({"files": [{"name": f"g{i}.fasta", "text": ">x\nACGT\n"} for i in range(31)], "params": {}}).status_code == 400  # web limit: 30 files
+assert post({"files": [{"name": "large.fasta", "text": ">x\nACGT\n" + " " * (1024 * 1024)}], "params": {}}).status_code == 400  # web limit: 1 MB/file
 assert post({"files": [], "params": {}}).status_code == 400
 assert post({"files": files[:1] + [{"name": "x.fasta", "text": ">x\nACGTRY\n", "label": "bad"}], "params": {}}).status_code == 400
 r = post({"files": [{"name": "a.fasta", "text": ">x\nACGTRY\n"}, {"name": "b.fasta", "text": ">y\nAC-GU\n"}] + files[:1], "params": {}})

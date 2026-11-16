@@ -237,8 +237,9 @@ def mine_genome(genome: Genome, min_repeats: dict, flank: int = 150) -> list[SSR
             left = seq[max(0, s - flank):s]
             right = seq[e + len(tail):e + len(tail) + flank]
             n_in_flanks = left.upper().count("N") + right.upper().count("N")
-            if n_in_flanks > 0:
-                continue
+            # Keep valid SSRs even when an N occurs in the flanking window. The SSR tract
+            # itself is guaranteed to contain only A/C/G/T by the mining regex; compromised
+            # flanks are flagged and excluded from sequence FASTA exports downstream.
             out.append(SSR(
                 genome=genome.idx, contig=cid, start=s + 1, end=e, motif=motif,
                 canon=canonical_motif(motif), reps=(e - s) // len(motif), seq=seq[s:e],

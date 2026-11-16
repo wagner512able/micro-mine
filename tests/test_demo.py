@@ -68,24 +68,34 @@ with tempfile.TemporaryDirectory() as d:
         run(os.path.join(d, "in"), os.path.join(d, "out8"), flank=50, anchor=60, log=lambda *_: None); raise SystemExit("anchor > flank accepted")
     except ValueError:
         pass
-    # N bases: SSRs whose flanking region has N are flagged (cross in plots, WARNING_N in FASTA/GFF3, Excel column)
+    # N bases: retain valid SSRs with N in flanks, but never export their flanked sequence.
     from micromine.core import read_fasta, mine_genome as _mg
     inn = os.path.join(d, "inN")
     os.makedirs(inn, exist_ok=True)
     for f in os.listdir(os.path.join(d, "in")):
         cid, seq = read_fasta(os.path.join(d, "in", f))[0]
         if f.startswith("02_"):
-            tgt = next(m for m in clusters[3].members if m.genome == 1)        # an SSR of species 02
-            idx = tgt.start - 1  # Conversão de 1-based para índice 0-based do Python
-            seq = seq[:idx - 10] + "NNN" + seq[idx - 7:]  # Inserção a 10 bases antes (garantido dentro do flanco)
+            tgt = next(m for m in clusters[3].members if m.genome == 1)
+            idx = tgt.start - 1
+            seq = seq[:idx - 10] + "NNN" + seq[idx - 7:]
         open(os.path.join(inn, f), "w").write(f">{cid}\n{seq}\n")
-    gN, cN, sN = run(inn, os.path.join(d, "outN"), log=lambda *_: None)
-    # SSRs with N in their saved flanks are EXCLUDED (not reported): none can be flagged as compromised
-    assert not [m for c in cN for m in c.members if m.compromised]
-    n_ref = sum(1 for c in clusters for m in c.members if m.genome == 1)                      # species 02 without N (baseline run)
-    n_N = sum(1 for m in sN if m.genome == 1)
-    assert gN[1].n_count == 3 and n_N < n_ref, (gN[1].n_count, n_N, n_ref)   # the SSR next to the Ns disappeared
-    assert all(m.n_flank == 0 for m in sN)
+    outN = os.path.join(d, "outN")
+    gN, cN, sN = run(inn, outN, log=lambda *_: None)
+    compromised = [m for m in sN if m.compromised]
+    assert compromised, "SSR with N in flanks should remain annotated"
+    assert gN[1].n_count == 3
+    assert all("N" not in m.seq.upper() for m in sN), "N must never occur inside an annotated SSR"
+    # Every FASTA sequence is clean; compromised SSRs remain documented in a warning TSV.
+    for base, _, files in os.walk(outN):
+        for fn in files:
+            if fn.lower().endswith(('.fasta', '.fa', '.fna')):
+                txt = open(os.path.join(base, fn)).read()
+                seq_lines = [ln for ln in txt.splitlines() if ln and not ln.startswith('>')]
+                assert all('N' not in ln.upper() for ln in seq_lines), (fn, txt)
+    warning = open(os.path.join(outN, "N_flank_warnings.tsv")).read()
+    assert "SSR annotated; flanked sequence withheld" in warning
+    assert len(warning.strip().splitlines()) == len(compromised) + 1
+    assert any(m.compromised for c in cN for m in c.members)
     # characters other than A,C,G,T,N are rejected, listing every offending file
     bad = os.path.join(d, "bad"); os.makedirs(bad, exist_ok=True)
     for f in sorted(os.listdir(os.path.join(d, "in")))[:3]:
