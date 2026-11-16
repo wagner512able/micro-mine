@@ -3,9 +3,9 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "micromine"
+name = "THANNYA"
 version = "1.1.0"
-description = "Mining and comparison of microsatellites (SSRs) in organellar genomes"
+description = "a tool for the annotation and identification of orthologous and unique microsatellites in genomes"
 requires-python = ">=3.9"
 authors = [{name = "Wagner Nunes Ribeiro", email = "wagner2@egresso.ufg.br"}]
 dependencies = ["openpyxl>=3.0", "flask>=2.3"]
@@ -15,11 +15,11 @@ pdf = ["cairosvg"]
 web = ["gunicorn"]
 
 [project.scripts]
-micromine = "micromine.cli:main"
-micromine-web = "micromine.web.app:main"
+thannya = "micromine.cli:main"
+thannya-web = "micromine.web.app:main"
 
 [tool.setuptools]
-packages = ["micromine", "micromine.web"]
+packages = ["thannya", "thannya.web"]
 
 [tool.setuptools.package-data]
-"micromine.web" = ["static/*"]
+"thannya.web" = ["static/*"]
