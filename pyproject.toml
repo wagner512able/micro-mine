@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "micromine"
-version = "0.13.0"
+version = "1.1.0"
 description = "Mining and comparison of microsatellites (SSRs) in organellar genomes"
 requires-python = ">=3.9"
 authors = [{name = "Wagner Nunes Ribeiro", email = "wagner2@egresso.ufg.br"}]
