@@ -9,6 +9,6 @@ dist/
 .DS_Store
 .vercel/
 node_modules/
-micromine_out/
+thannya_out/
 demo_data/
 demo_out/

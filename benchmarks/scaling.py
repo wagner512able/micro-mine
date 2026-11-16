@@ -1,7 +1,7 @@
-"""Scalability benchmark of the REAL MICRO-MINE pipeline (reading, mining, locus matching, reports, figures).
+"""Scalability benchmark of the REAL THANNYA pipeline (reading, mining, locus matching, reports, figures).
 
-Self-contained: one file, no other script needed. Every measurement runs `micromine.cli.run` in a separate process
-(this same file, started with --child), so that wall time and peak memory belong to MICRO-MINE alone.
+Self-contained: one file, no other script needed. Every measurement runs `thannya.cli.run` in a separate process
+(this same file, started with --child), so that wall time and peak memory belong to THANNYA alone.
 
 A) number of genomes: N copies (N = 2..50) of a real chloroplast genome, each with 0.5 % random substitutions
 B) genome size: synthetic AT-rich genomes (0.5-5 Mb) with ~0.14 SSRs/kb; annotation of one genome and
@@ -65,7 +65,7 @@ def peak_memory_mb():
 
 
 def child(folder, out):
-    from micromine.cli import run
+    from thannya.cli import run
     t0 = time.perf_counter()
     _, clusters, ssrs = run(folder, out, log=lambda *_: None, fasta_layout=(), exclusive_fasta="none")
     print(f"{time.perf_counter() - t0:.2f}\t{peak_memory_mb():.0f}\t{len(ssrs)}\t{len(clusters)}")
@@ -110,7 +110,7 @@ def measure(folder, repeats):
                            capture_output=True, text=True)
         shutil.rmtree(out, ignore_errors=True)
         if r.returncode:
-            raise SystemExit("MICRO-MINE failed:\n" + r.stderr)
+            raise SystemExit("THANNYA failed:\n" + r.stderr)
         runs.append([float(x) for x in r.stdout.split()])
     return (statistics.median(x[0] for x in runs), max(x[1] for x in runs),
             int(runs[0][2]), int(runs[0][3]))

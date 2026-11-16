@@ -1,40 +1,40 @@
-<p align="center"><img src="docs/logo.jpg" alt="MICRO-MINE - Microsatellite Mineration" width="520"></p>
+<p align="center"><img src="docs/logo.png" alt="THANNYA - Microsatellite annotation and comparison" width="520"></p>
 
-# MICRO-MINE
+# THANNYA
 
-Mining, annotation and comparison of microsatellites (SSRs) in **organellar genomes** (chloroplast of
+A tool for the annotation and identification of orthologous and unique microsatellites in genomes. THANNYA supports annotation of individual FASTA files and comparative identification of orthologous and unique SSRs across multiple genomes (chloroplast of
 plants/algae, mitochondria of animals). Give it **one FASTA** to annotate its SSRs or **2 or more FASTA files** to compare
 them across species (up to 30 files on the web; locally, the CLI defaults to 50 and can be raised with `--max-files`): shared, absent, longer/shorter and exclusive SSRs, with flanking regions ready for primer design.
 
-![MICRO-MINE results page](docs/micromine_variable_markers.jpg)
+![THANNYA results page](docs/thannya_variable_markers.jpg)
 
 ## Quick start
     pip install -e ".[web]"
-    python3 -m micromine -i fasta_folder -o results      # command line (files named 01_speciesA.fasta, 02_speciesB.fasta...)
-    python3 -m micromine -i genome.fasta -o results      # single genome: SSR annotation
-    python3 -m micromine-web --port 8000                 # web page on (https://micro-mine.onrender.com/)
+    python3 -m thannya -i fasta_folder -o results      # command line (files named 01_speciesA.fasta, 02_speciesB.fasta...)
+    python3 -m thannya -i genome.fasta -o results      # single genome: SSR annotation
+    thannya-web --port 8000                 # local web interface
 
 ## Deployments
-* **GitHub + Render (free, online lite)**: see https://micro-mine.onrender.com
+* **GitHub + Render (free, online lite)**: update the deployment URL here after renaming the Render service to THANNYA.
   Web limits: up to 30 FASTA files, 1 MB per file and 1,000,000 bp per genome. The serverless deployment also has a separate compressed-request limit of about 4.2 MB.
-* **Docker / own server (full)**: `docker build -t micromine . && docker run -p 8000:8000 micromine`.
+* **Docker / own server (full)**: `docker build -t thannya . && docker run -p 8000:8000 thannya`.
   Background jobs, the same 30-file / 1 MB-per-file upload limits, PDF figures and results kept for 24 h.
 
 ## Citation
 See [CITATION.cff](CITATION.cff). License: MIT (see `LICENSE`).
 
-## Author
-Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br
+## Author and dedication
+Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANNYA is a tribute to the author’s doctoral supervisor.
 
 ## Usage
-    # To install and run MICRO-MINE locally, first navigate to your home directory (user root folder), 
+    # To install and run THANNYA locally, first navigate to your home directory (user root folder), 
     then clone the repository and enter the project directory by running:
-    git clone https://github.com/wagner512able/micro-mine.git and 
-    cd micro-mine. 
+    git clone https://github.com/wagner512able/thannya.git and 
+    cd thannya. 
     
     # Next, create and activate a dedicated Conda environment using:
-    conda create -n micromine_env python=3.10 -y and
-    conda activate micromine_env. 
+    conda create -n thannya_env python=3.10 -y and
+    conda activate thannya_env. 
     
     # Install the package in editable mode by running: 
     pip install --no-deps --no-build-isolation -e .
@@ -56,13 +56,13 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br
     fi
     done
 
-    # Finally, return to the project root directory and execute MICRO-MINE by pointing to your 
+    # Finally, return to the project root directory and execute THANNYA by pointing to your 
     input folder and desired output destination using the command:
-    python3 -m micromine -i /path/to/your/fasta/directory -o /path/to/your/output/results
+    python3 -m thannya -i /path/to/your/fasta/directory -o /path/to/your/output/results
 
     # If you need to generate an additional image of specific genomic regions, use the command 
     below according to the size of your genome:
-    python3 -m micromine -i /path/to/your/fasta/directory -o /path/to/your/output/results --region 20000-40000 # + zoomed plot
+    python3 -m thannya -i /path/to/your/fasta/directory -o /path/to/your/output/results --region 20000-40000 # + zoomed plot
 
     If you would like more specific parameters, they are listed below in the "Main Options" section.
 
@@ -84,11 +84,11 @@ logs also report how many valid SSRs had their flanked sequences withheld. The *
 reports the number of N bases per genome and SSRs compromised by N.
 
 ## Single-genome annotation mode
-With a single FASTA (`micromine -i genome.fasta -o out`, or one file uploaded to the web page) there is
-nothing to compare, so MICRO-MINE annotates the SSRs of that genome only and writes:
-`micromine_report.xlsx` (SSR_annotation, Summary with SSRs per class and per kb, Motif_counts, Parameters),
-`micromine_SSRs.gff3` (feature type `microsatellite`, loadable in genome browsers), `SSRs_with_flanks.fasta`
-(SSR highlighted by case, flanks of the length you chose) and `micromine_annotation_map.svg/.pdf`
+With a single FASTA (`thannya -i genome.fasta -o out`, or one file uploaded to the web page) there is
+nothing to compare, so THANNYA annotates the SSRs of that genome only and writes:
+`thannya_report.xlsx` (SSR_annotation, Summary with SSRs per class and per kb, Motif_counts, Parameters),
+`thannya_SSRs.gff3` (feature type `microsatellite`, loadable in genome browsers), `SSRs_with_flanks.fasta`
+(SSR highlighted by case, flanks of the length you chose) and `thannya_annotation_map.svg/.pdf`
 (map of the SSRs along each contig, colored by class, plus counts per class). Every SSR is listed,
 including copies in inverted repeats. Comparison-only options (similarity, anchor, relax, regions) are ignored.
 
@@ -138,7 +138,7 @@ for zoomed plots) so readers can locate each SSR. Loci absent in the reference a
 interpolation between shared neighbouring loci.
 
 ## Outputs
-- `micromine_report.xlsx`: SSR_comparison, Presence_Absence, SSR_per_species, Summary, Variation_per_species, Variation_by_type, Variation_by_species, Parameters
+- `thannya_report.xlsx`: SSR_comparison, Presence_Absence, SSR_per_species, Summary, Variation_per_species, Variation_by_type, Variation_by_species, Parameters
 - FASTA outputs (choose with `--fasta-layout`; the SSR is highlighted by case, see `--ssr-case`;
   every header has `ssr_in_seq=START-END`, the SSR position inside the extracted sequence, for primer design):
   - `fasta_per_species/NN_species_SSRs.fasta`: all SSRs of one species/input file, as found in its genome
@@ -146,16 +146,16 @@ interpolation between shared neighbouring loci.
     reverse-complemented to the orientation of the first copy so the records can be aligned directly
     (only copies that meet the threshold are included)
   - `SSRs_with_flanks.fasta`: one record per locus (first species in which it occurs)
-- `micromine_comparison.svg` (all loci), `micromine_variable_markers.svg` (only absences,
-  exclusives and polymorphisms) and `micromine_region_START-END.svg` (zoom); `.pdf` with `--pdf`
+- `thannya_comparison.svg` (all loci), `thannya_variable_markers.svg` (only absences,
+  exclusives and polymorphisms) and `thannya_region_START-END.svg` (zoom); `.pdf` with `--pdf`
 
 ## Web version (server with background jobs)
 
 The public web interface accepts at most **30 FASTA files**, each no larger than **1 MB** (and up to 1,000,000 bp). For larger batches or files, use the local command-line version. The CLI defaults to 50 files and its `--max-files` option can raise that limit as needed.
     pip install -e ".[web,pdf]"
-    micromine-web --port 8000                    # development server
-    gunicorn -w 1 --threads 8 -b 0.0.0.0:8000 micromine.web.app:app    # production
-    # or: docker build -t micromine . && docker run -p 8000:8000 -v micromine_data:/data micromine
+    thannya-web --port 8000                    # development server
+    gunicorn -w 1 --threads 8 -b 0.0.0.0:8000 thannya.web.app:app    # production
+    # or: docker build -t thannya . && docker run -p 8000:8000 -v thannya_data:/data thannya
 
 Open the page, drop 1 to 30 FASTA files (1 = SSR annotation only), reorder them (the order becomes the `NN_` prefixes),
 edit the species labels, set the thresholds and run. Results (ZIP, Excel, SVG/PDF figures, FASTAs)
@@ -163,8 +163,8 @@ are shown in the page and kept for 24 h. The server accepts organellar genomes o
 (default: 1 MB and 1,000,000 bp per file). Each analysis runs in its own subprocess, with a
 15-minute limit, at most 2 at a time and 20 analyses per IP per hour. Contig names are sanitized
 (prevents spreadsheet-formula injection) and job IDs are random 128-bit tokens. Limits can be
-changed with `MICROMINE_MAX_FILE_MB`, `MICROMINE_MAX_GENOME_BP`, `MICROMINE_MAX_CONCURRENT`,
-`MICROMINE_JOB_TTL_HOURS`, `MICROMINE_JOBS_PER_HOUR` and `MICROMINE_WORKDIR`. For a public
+changed with `THANNYA_MAX_FILE_MB`, `THANNYA_MAX_GENOME_BP`, `THANNYA_MAX_CONCURRENT`,
+`THANNYA_JOB_TTL_HOURS`, `THANNYA_JOBS_PER_HOUR` and `THANNYA_WORKDIR`. For a public
 deployment put it behind HTTPS (e.g. nginx) with a request-size limit of ~35 MB and keep
 `gunicorn -w 1` (concurrency control is per process).
 

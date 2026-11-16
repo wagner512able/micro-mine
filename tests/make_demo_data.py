@@ -1,4 +1,4 @@
-"""Generate 4 synthetic plastomes to test MICRO-MINE.
+"""Generate 4 synthetic plastomes to test THANNYA.
 
 01 ancestral | 02 flank SNPs + repeat-number changes
 03 SSR #6 broken by a SNP + one exclusive SSR | 04 rotated and reverse strand
@@ -8,7 +8,7 @@ import random
 import sys
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from micromine.core import revcomp  # noqa: E402
+from thannya.core import revcomp  # noqa: E402
 
 DEFS = [("A", 12), ("T", 13), ("AT", 9), ("AG", 7), ("AAT", 7), ("ACC", 6),
         ("AAAT", 6), ("AATG", 5), ("AAGAG", 5), ("ATTCG", 5), ("AAGTCT", 5), ("C", 11)]

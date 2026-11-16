@@ -1,4 +1,4 @@
-# FASTA outputs (MICRO-MINE)
+# FASTA outputs (THANNYA)
 
 Every record is `flank + repeat tract + flank`. The **repeat tract is highlighted by case** (`--ssr-case`, default: tract in
 lowercase, flanks in UPPERCASE). The tract is the full repeat units **plus the incomplete unit that continues the tract**

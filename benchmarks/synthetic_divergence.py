@@ -1,10 +1,10 @@
-"""Synthetic benchmark: how well does MICRO-MINE recognise the SAME SSR locus in a diverged copy?
+"""Synthetic benchmark: how well does THANNYA recognise the SAME SSR locus in a diverged copy?
 
 Simulates a plastid-derived sequence integrated in another organellar genome (an MTPT-like situation) or, more
 generally, an orthologous locus that diverged between genomes. Genome 1 ("plastome") carries 140 SSR loci
 (8 motifs, 1.5 kb of random flank on each side). Genome 2 ("mitogenome") carries one copy of every locus with random
 substitutions at 0-20 % in the flanks, either keeping the SSR tract intact or mutating it as well.
-For every SSR of genome 1 the script records whether MICRO-MINE reports the locus as
+For every SSR of genome 1 the script records whether THANNYA reports the locus as
   shared     : the SSR meets the threshold in both genomes (same motif + similar flanks)
   below      : the homologous locus is found below the threshold in genome 2 (relaxed search)
   exclusive  : no homologous SSR found (the SSR would be called organelle-specific)
@@ -18,7 +18,7 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."))
-from micromine.cli import run  # noqa: E402
+from thannya.cli import run  # noqa: E402
 
 SEED = int(sys.argv[1]) if len(sys.argv) > 1 else 11
 rng = random.Random(SEED)

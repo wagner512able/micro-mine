@@ -2,14 +2,14 @@
 import io, json, os, sys, tempfile, time, zipfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.dirname(__file__))
-os.environ["MICROMINE_WORKDIR"] = tempfile.mkdtemp()
+os.environ["THANNYA_WORKDIR"] = tempfile.mkdtemp()
 from make_demo_data import build
-from micromine.web.app import app
+from thannya.web.app import app
 
 d = tempfile.mkdtemp(); build(d)
 names = sorted(os.listdir(d))
 c = app.test_client()
-assert c.get("/").status_code == 200 and b"MICRO-MINE" in c.get("/").data and b"wagner2@egresso.ufg.br" in c.get("/").data and c.get("/static/logo.jpg").status_code == 200
+assert c.get("/").status_code == 200 and b"THANNYA" in c.get("/").data and b"wagner2@egresso.ufg.br" in c.get("/").data and c.get("/static/logo.png").status_code == 200
 cfg = c.get("/api/config").get_json(); assert cfg["max_files"] == 30 and cfg["max_file_mb"] == 1
 
 
@@ -52,11 +52,11 @@ assert st["status"] == "done", st
 s = st["summary"]; assert s["loci"] >= 13 and s["exclusive_real"] == 1 and len(s["genomes"]) == 4
 assert s["genomes"][1]["name"] == "snps_flank"
 assert s["compromised_loci"] >= 1 and s["genomes"][1]["n_bases"] == 5     # valid SSRs retained; flanks flagged
-assert "micromine_report.xlsx" in s["files"] and "micromine_region_1000-8000.svg" in s["files"]
-assert c.get(f"/results/{job}/micromine_comparison.svg").status_code == 200
+assert "thannya_report.xlsx" in s["files"] and "thannya_region_1000-8000.svg" in s["files"]
+assert c.get(f"/results/{job}/thannya_comparison.svg").status_code == 200
 z = c.get(f"/download/{job}.zip"); assert z.status_code == 200
 zfile = zipfile.ZipFile(io.BytesIO(z.data))
-names_z = zfile.namelist(); assert "micromine_report.xlsx" in names_z and "N_flank_warnings.tsv" in names_z
+names_z = zfile.namelist(); assert "thannya_report.xlsx" in names_z and "N_flank_warnings.tsv" in names_z
 assert any(n.startswith("fasta_per_locus/") for n in names_z) and not any(n.startswith("fasta_per_species/") for n in names_z)
 for fn in names_z:
     if fn.lower().endswith((".fasta", ".fa", ".fna")):
@@ -65,7 +65,7 @@ for fn in names_z:
         assert "N" not in seq_text.upper(), (fn, fasta_text)
 assert s["fasta_per_locus"] == s["loci"] and s["fasta_per_species"] == 0
 import openpyxl
-wb = openpyxl.load_workbook(io.BytesIO(zipfile.ZipFile(io.BytesIO(z.data)).read("micromine_report.xlsx")))
+wb = openpyxl.load_workbook(io.BytesIO(zipfile.ZipFile(io.BytesIO(z.data)).read("thannya_report.xlsx")))
 contigs = {r[4] for r in wb["SSR_comparison"].iter_rows(min_row=2, values_only=True)}
 assert not any(str(x).startswith("=") for x in contigs), contigs
 # single file: annotation mode with a 75 bp flank
@@ -76,9 +76,9 @@ for _ in range(60):
     if st1["status"] in ("done", "error"): break
     time.sleep(1)
 assert st1["status"] == "done", st1
-a = st1["summary"]; assert a["mode"] == "annotation" and a["ssrs"] >= 12 and set(a["files"]) >= {"micromine_SSRs.gff3", "micromine_report.xlsx", "micromine_annotation_map.svg", "SSRs_with_flanks.fasta"}
+a = st1["summary"]; assert a["mode"] == "annotation" and a["ssrs"] >= 12 and set(a["files"]) >= {"thannya_SSRs.gff3", "thannya_report.xlsx", "thannya_annotation_map.svg", "SSRs_with_flanks.fasta"}
 z1 = zipfile.ZipFile(io.BytesIO(c.get(f"/download/{job1}.zip").data))
-gff = z1.read("micromine_SSRs.gff3").decode().strip().split("\n")
+gff = z1.read("thannya_SSRs.gff3").decode().strip().split("\n")
 assert gff[0] == "##gff-version 3" and sum(1 for l in gff if not l.startswith("#")) == a["ssrs"]
 fa = z1.read("SSRs_with_flanks.fasta").decode(); assert "flank=75/75" in fa
 assert "N" not in "".join(line for line in fa.splitlines() if line and not line.startswith(">"))

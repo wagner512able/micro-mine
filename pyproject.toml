@@ -3,8 +3,8 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "THANNYA"
-version = "1.1.0"
+name = "thannya"
+version = "1.2.0"
 description = "a tool for the annotation and identification of orthologous and unique microsatellites in genomes"
 requires-python = ">=3.9"
 authors = [{name = "Wagner Nunes Ribeiro", email = "wagner2@egresso.ufg.br"}]
@@ -15,8 +15,8 @@ pdf = ["cairosvg"]
 web = ["gunicorn"]
 
 [project.scripts]
-thannya = "micromine.cli:main"
-thannya-web = "micromine.web.app:main"
+thannya = "thannya.cli:main"
+thannya-web = "thannya.web.app:main"
 
 [tool.setuptools]
 packages = ["thannya", "thannya.web"]

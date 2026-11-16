@@ -3,8 +3,8 @@ import os, sys, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.dirname(__file__))
 from make_demo_data import build
-from micromine.cli import run
-from micromine.core import exclusivity, relative_status, variation_type
+from thannya.cli import run
+from thannya.core import exclusivity, relative_status, variation_type
 
 with tempfile.TemporaryDirectory() as d:
     build(os.path.join(d, "in"))
@@ -52,16 +52,16 @@ with tempfile.TemporaryDirectory() as d:
     assert all(a.refpos <= b.refpos for a, b in zip(clusters, clusters[1:]))
     # zoom plot
     g3, c3, _ = run(os.path.join(d, "in"), os.path.join(d, "out3"), regions=[(1000, 8000)], log=lambda *_: None)
-    assert os.path.exists(os.path.join(d, "out3", "micromine_region_1000-8000.svg"))
+    assert os.path.exists(os.path.join(d, "out3", "thannya_region_1000-8000.svg"))
     # single-genome annotation mode (CLI accepts a file path) and 75 bp flanks
     single = os.path.join(d, "in", sorted(os.listdir(os.path.join(d, "in")))[0])
     g6, c6, ssrs6 = run(single, os.path.join(d, "out6"), flank=75, log=lambda *_: None)
     assert len(g6) == 1 and c6 == [] and len(ssrs6) >= 12
     out6 = os.path.join(d, "out6")
-    assert all(os.path.exists(os.path.join(out6, f)) for f in ("micromine_report.xlsx", "micromine_SSRs.gff3", "SSRs_with_flanks.fasta", "micromine_annotation_map.svg"))
+    assert all(os.path.exists(os.path.join(out6, f)) for f in ("thannya_report.xlsx", "thannya_SSRs.gff3", "SSRs_with_flanks.fasta", "thannya_annotation_map.svg"))
     assert all(len(s.left) == 75 or s.start <= 75 for s in ssrs6) and "flank=75/75" in open(os.path.join(out6, "SSRs_with_flanks.fasta")).read()
     import openpyxl
-    wb6 = openpyxl.load_workbook(os.path.join(out6, "micromine_report.xlsx")); assert wb6.sheetnames[:3] == ["SSR_annotation", "Summary", "Motif_counts"]
+    wb6 = openpyxl.load_workbook(os.path.join(out6, "thannya_report.xlsx")); assert wb6.sheetnames[:3] == ["SSR_annotation", "Summary", "Motif_counts"]
     g7, c7, _ = run(os.path.join(d, "in"), os.path.join(d, "out7"), flank=75, log=lambda *_: None)   # comparison with 75 bp flanks
     assert all(len(m.left) <= 75 and len(m.right) <= 75 for c in c7 for m in c.members) and len(c7) == len(clusters)
     try:
@@ -69,7 +69,7 @@ with tempfile.TemporaryDirectory() as d:
     except ValueError:
         pass
     # N bases: retain valid SSRs with N in flanks, but never export their flanked sequence.
-    from micromine.core import read_fasta, mine_genome as _mg
+    from thannya.core import read_fasta, mine_genome as _mg
     inn = os.path.join(d, "inN")
     os.makedirs(inn, exist_ok=True)
     for f in os.listdir(os.path.join(d, "in")):

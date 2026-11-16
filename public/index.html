@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="icon" type="image/png" href="static/favicon.png">
-<title>MICRO-MINE - SSR annotation and comparison of organellar genomes</title>
+<title>THANNYA - SSR annotation and comparison of organellar genomes</title>
 <style>
   :root { --bg:#f4f4f5; --card:#fff; --ink:#18181b; --muted:#667085; --line:#d9dce1; --brand:#000; --accent:#f28c28;
           --ok:#1a7f4b; --err:#b42318; }
@@ -80,8 +80,8 @@
 </head>
 <body>
 <header>
-  <h1 class="sr">MICRO-MINE</h1>
-  <img class="logo" src="static/logo.jpg" alt="MICRO-MINE - Microsatellite Mineration">
+  <h1 class="sr">THANNYA</h1>
+  <img class="logo" src="static/logo.png" alt="THANNYA - Microsatellite annotation and comparison">
   <p>Mining, annotation and comparison of microsatellites (SSRs) in organellar genomes</p>
   <p class="by">Developed by Ph.D. Wagner Nunes Ribeiro</p>
 </header>
@@ -149,7 +149,7 @@
 
   <section class="card">
     <h2>3. Run</h2>
-    <button class="primary" id="run" disabled>Run MICRO-MINE</button>
+    <button class="primary" id="run" disabled>Run THANNYA</button>
     <button id="reset" style="margin-left:8px">Reset parameters</button>
     <div id="msg"></div>
     <pre id="log" hidden></pre>
@@ -193,12 +193,12 @@ async function init() {
     'Accepted bases: A, C, G, T and N (N = unknown base); files with any other character are rejected.';
   $('#limits').textContent = 'Accepted: .fasta .fa .fna .fas (up to ' + cfg.max_files + ' files)';
   const serverless = cfg.mode === 'serverless';
-  $('#foot').textContent = 'MICRO-MINE v' + cfg.version + (serverless ? ' - your files are processed in memory and are not stored on the server.'
+  $('#foot').textContent = 'THANNYA v' + cfg.version + (serverless ? ' - your files are processed in memory and are not stored on the server.'
     : ' - results are kept for ' + cfg.job_ttl_hours + ' h and then deleted.');
   if (cfg.repo_url) { const a = document.createElement('a'); a.href = cfg.repo_url; a.textContent = 'Source code on GitHub'; a.rel = 'noopener';
     $('#foot').append(' \u00B7 ', a); }
   if (serverless) $('#scope').textContent += ' Online version: up to about ' + cfg.max_payload_mb + ' MB of compressed FASTA per analysis ' +
-    '(roughly 25-50 chloroplast genomes or hundreds of animal mitogenomes). For larger jobs install MICRO-MINE locally.';
+    '(roughly 25-50 chloroplast genomes or hundreds of animal mitogenomes). For larger jobs install THANNYA locally.';
   buildMins(); render();
 }
 function buildMins() {
@@ -300,7 +300,7 @@ function updateMode() {
   m.hidden = items.length === 0;
   m.textContent = one ? 'Single file: SSR annotation mode. SSRs are mined and annotated (Excel, GFF3, FASTA and a map of the SSRs); there is no species comparison.'
     : items.length > 1 ? 'Comparison mode: SSRs are mined in every genome and compared across species.' : '';
-  $('#run').textContent = one ? 'Annotate SSRs' : 'Run MICRO-MINE';
+  $('#run').textContent = one ? 'Annotate SSRs' : 'Run THANNYA';
   const opts = $('#excl_mode').options;
   opts[0].textContent = one ? 'Yes, one file' : 'Yes, one file per species';
   opts[1].textContent = one ? 'Yes, one file per contig' : 'Yes, one file per species and contig';
@@ -426,11 +426,11 @@ function showResults(s) {
   const base = 'results/' + job + '/';
   const dl = $('#downloads'); dl.textContent = '';
   const zip = el('a', 'Download all (ZIP)', 'main');
-  if (cfg.mode === 'serverless') { zip.href = blobUrls['micromine_results.zip']; zip.download = 'micromine_results.zip'; } else zip.href = 'download/' + job + '.zip';
+  if (cfg.mode === 'serverless') { zip.href = blobUrls['thannya_results.zip']; zip.download = 'thannya_results.zip'; } else zip.href = 'download/' + job + '.zip';
   dl.appendChild(zip);
-  const names = { 'micromine_report.xlsx': 'Excel report', 'SSRs_with_flanks.fasta': 'SSRs + flanks (FASTA)', 'micromine_SSRs.gff3': 'GFF3 annotation', 'N_flank_warnings.tsv': 'Warnings: N in flanking regions' };
+  const names = { 'thannya_report.xlsx': 'Excel report', 'SSRs_with_flanks.fasta': 'SSRs + flanks (FASTA)', 'thannya_SSRs.gff3': 'GFF3 annotation', 'N_flank_warnings.tsv': 'Warnings: N in flanking regions' };
   s.files.forEach(f => {
-    const label = names[f] || (/\.(svg|pdf)$/.test(f) ? f.replace('micromine_', '') : null);
+    const label = names[f] || (/\.(svg|pdf)$/.test(f) ? f.replace('thannya_', '') : null);
     if (!label) return;
     if (cfg.mode === 'serverless' && !blobUrls[f]) return;
     const a = el('a', label); a.href = urlFor(f); if (cfg.mode === 'serverless') a.download = f; else a.target = '_blank'; a.rel = 'noopener'; dl.appendChild(a);
@@ -448,7 +448,7 @@ function showResults(s) {
   table($('#tvar'), ['Variation type', 'Loci'], Object.entries(s.variation), 1);
   const figs = $('#figs'); figs.textContent = '';
   s.files.filter(f => /\.svg$/.test(f)).forEach(f => {
-    const box = el('div', undefined, 'fig'); box.appendChild(el('h3', f.replace('micromine_', '').replace('.svg', '').replace(/_/g, ' ')));
+    const box = el('div', undefined, 'fig'); box.appendChild(el('h3', f.replace('thannya_', '').replace('.svg', '').replace(/_/g, ' ')));
     if (cfg.mode === 'serverless' && !blobUrls[f]) return;
     const img = document.createElement('img'); img.src = urlFor(f); img.alt = f; img.loading = 'lazy'; box.appendChild(img); figs.appendChild(box);
   });

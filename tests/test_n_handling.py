@@ -4,8 +4,8 @@ import sys
 import tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
-from micromine.core import Genome, mine_genome
-from micromine.cli import run
+from thannya.core import Genome, mine_genome
+from thannya.cli import run
 
 mins = {1: 99, 2: 6, 3: 99, 4: 99, 5: 99, 6: 99}
 
@@ -37,6 +37,6 @@ with tempfile.TemporaryDirectory() as d:
     assert "N" not in "".join(x for x in fa.splitlines() if x and not x.startswith(">"))
     warnings = open(os.path.join(out, "N_flank_warnings.tsv")).read()
     assert "SSR annotated; flanked sequence withheld" in warnings
-    gff = open(os.path.join(out, "micromine_SSRs.gff3")).read()
+    gff = open(os.path.join(out, "thannya_SSRs.gff3")).read()
     assert "compromised_by_N=1" in gff
 print("OK: N handling validated.")

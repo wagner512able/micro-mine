@@ -3,8 +3,8 @@ import os, re, sys, tempfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.dirname(__file__))
 from make_demo_data import build
-from micromine.cli import run
-from micromine.core import Genome, case_flanked, mine_genome
+from thannya.cli import run
+from thannya.core import Genome, case_flanked, mine_genome
 
 # 1) the repeat tract includes the incomplete unit that continues it: (TC)6 followed by T -> 'tctctctctctct'
 seq = "GGCATCGAGTAG" + "TC" * 6 + "T" + "AGGATCCAGTTGCA"
@@ -54,6 +54,6 @@ with tempfile.TemporaryDirectory() as d:
     run(os.path.join(single, "mito.fasta"), os.path.join(d, "ann2"), exclusive_fasta="contig", log=lambda *_: None)
     assert sorted(os.listdir(os.path.join(d, "ann2", "fasta_unique"))) == ["mito__ctgA_unique.fasta", "mito__ctgB_unique.fasta"] or len(os.listdir(os.path.join(d, "ann2", "fasta_unique"))) >= 1
     import openpyxl
-    ws = openpyxl.load_workbook(os.path.join(d, "ann", "micromine_report.xlsx"))["SSR_annotation"]
+    ws = openpyxl.load_workbook(os.path.join(d, "ann", "thannya_report.xlsx"))["SSR_annotation"]
     hdr = [c.value for c in ws[1]]; assert "Locus copies in genome" in hdr and "Partial unit (highlighted, not counted)" in hdr
 print("OK: partial-unit highlight, repeat numbers, exclusive FASTA and unique SSRs validated.")

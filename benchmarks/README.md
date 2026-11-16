@@ -1,6 +1,6 @@
 # Benchmarks
 
-Both scripts run the real MICRO-MINE code (`micromine.cli.run`) and print tab-separated tables.
+Both scripts run the real THANNYA code (`thannya.cli.run`) and print tab-separated tables.
 
 * `scaling.py PLASTOME.fasta [REPEATS] [--quick] [--save FILE]` - self-contained script: run time and peak memory
   against the number of genomes (2-50 copies of a real chloroplast genome with 0.5 % substitutions) and against genome

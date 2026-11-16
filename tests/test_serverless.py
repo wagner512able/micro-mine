@@ -3,7 +3,7 @@ import base64, gzip, io, json, os, sys, tempfile, zipfile
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 sys.path.insert(0, os.path.dirname(__file__))
 from make_demo_data import build
-from micromine.web.serverless import app
+from thannya.web.serverless import app
 
 d = tempfile.mkdtemp(); build(d)
 files = [{"name": n, "label": n.split("_", 1)[1][:-6], "text": open(os.path.join(d, n)).read()} for n in sorted(os.listdir(d))]
@@ -37,23 +37,23 @@ before = set(os.listdir(tempfile.gettempdir()))
 r = post({"files": files, "params": {"regions": "1000-8000", "flank": 75, "ssr_case": "upper"}}); assert r.status_code == 200, r.data
 j = r.get_json(); s = j["summary"]
 assert s["mode"] == "comparison" and s["loci"] == 14 and s["exclusive_real"] == 1 and len(s["genomes"]) == 4
-assert {"micromine_results.zip", "micromine_report.xlsx", "micromine_comparison.svg"} <= set(j["downloads"])
+assert {"thannya_results.zip", "thannya_report.xlsx", "thannya_comparison.svg"} <= set(j["downloads"])
 assert not any(n.endswith(".pdf") for n in j["downloads"])
-z = zipfile.ZipFile(io.BytesIO(base64.b64decode(j["downloads"]["micromine_results.zip"]["b64"])))
-assert "micromine_report.xlsx" in z.namelist() and any(n.startswith("fasta_per_locus/") for n in z.namelist())
+z = zipfile.ZipFile(io.BytesIO(base64.b64decode(j["downloads"]["thannya_results.zip"]["b64"])))
+assert "thannya_report.xlsx" in z.namelist() and any(n.startswith("fasta_per_locus/") for n in z.namelist())
 assert "flank=75/75" in z.read("fasta_per_species/01_ancestral_SSRs.fasta").decode()
-assert base64.b64decode(j["downloads"]["micromine_comparison.svg"]["b64"]).startswith(b"<svg")
+assert base64.b64decode(j["downloads"]["thannya_comparison.svg"]["b64"]).startswith(b"<svg")
 assert post({"files": files, "params": {}}, gz=False).get_json()["summary"]["loci"] == 14
-assert not [x for x in set(os.listdir(tempfile.gettempdir())) - before if x.startswith("micromine_")], "temp files left behind"
+assert not [x for x in set(os.listdir(tempfile.gettempdir())) - before if x.startswith("thannya_")], "temp files left behind"
 # single file: annotation
 r = post({"files": files[:1], "params": {}}); a = r.get_json()["summary"]
-assert r.status_code == 200 and a["mode"] == "annotation" and "micromine_SSRs.gff3" in r.get_json()["downloads"]
+assert r.status_code == 200 and a["mode"] == "annotation" and "thannya_SSRs.gff3" in r.get_json()["downloads"]
 # the response never exceeds the limit: the page falls back to zip-only, then to an error
-import micromine.web.serverless as sv
-zlen = len(j["downloads"]["micromine_results.zip"]["b64"])
+import thannya.web.serverless as sv
+zlen = len(j["downloads"]["thannya_results.zip"]["b64"])
 sv.RESPONSE_LIMIT = zlen + 100
 r = post({"files": files, "params": {"regions": "1000-8000", "flank": 75, "ssr_case": "upper"}})
-assert r.status_code == 200 and list(r.get_json()["downloads"]) == ["micromine_results.zip"], list(r.get_json()["downloads"])
+assert r.status_code == 200 and list(r.get_json()["downloads"]) == ["thannya_results.zip"], list(r.get_json()["downloads"])
 sv.RESPONSE_LIMIT = 100
 r = post({"files": files, "params": {}}); assert r.status_code == 413 and "too large" in r.get_json()["error"]
 print("OK: serverless app validated.")
