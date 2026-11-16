@@ -1,6 +1,6 @@
 """THANNYA core: FASTA parsing, SSR mining and locus clustering.
 
-Scope: small organellar genomes (chloroplast of plants/algae, mitochondria of animals).
+Scope: all genomes, primarilly organellar genomes (chloroplast of plants/algae, mitochondria of animals).
 SSRs are grouped across species by the SAME MOTIF (canonical) and the SAME REGION, the
 latter defined by the similarity of the flanking sequences (SNP tolerant and independent of
 coordinates, rotation or strand of the genome).
