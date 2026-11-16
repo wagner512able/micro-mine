@@ -12,7 +12,7 @@ them across species (up to 30 files on the web; locally, the CLI defaults to 50 
     pip install -e ".[web]"
     python3 -m thannya -i fasta_folder -o results      # command line (files named 01_speciesA.fasta, 02_speciesB.fasta...)
     python3 -m thannya -i genome.fasta -o results      # single genome: SSR annotation
-    thannya-web --port 8000                 # local web interface
+    https://thannya-ssr.onrender.com                   # local web interface
 
 ## Deployments
 * **GitHub + Render (free, online lite)**: update the deployment URL here after renaming the Render service to THANNYA.
