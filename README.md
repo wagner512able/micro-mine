@@ -27,6 +27,7 @@ See [CITATION.cff](CITATION.cff). License: MIT (see `LICENSE`).
 Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANNYA is a tribute to the author’s doctoral supervisor.
 
 ## Usage
+    ### Linux
     # To install and run THANNYA locally, first navigate to your home directory (user root folder), 
     then clone the repository and enter the project directory by running:
     git clone https://github.com/wagner512able/thannya.git and 
@@ -65,6 +66,79 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
     python3 -m thannya -i /path/to/your/fasta/directory -o /path/to/your/output/results --region 20000-40000 # + zoomed plot
 
     If you would like more specific parameters, they are listed below in the "Main Options" section.
+
+    ### Windows (Command Prompt / CMD)
+
+    1. **Download and extract** the repository from GitHub (or clone it), open Command Prompt (`cmd`), and navigate to the project root folder (`thannya-main` or `thannya`).
+    2. **Create and activate a virtual environment:**
+    ```cmd
+    python -m venv venv
+    venv\Scripts\activate.bat
+
+    Install the package and dependencies locally:
+    pip install -e ".[web]"
+    pip install openpyxl
+
+    Verify the installation by running the built-in demonstration test:
+    python tests/test_demo.py
+
+    If the new files are generated and the terminal displays:
+    OK: 14 loci; rotation/reverse strand, flank SNPs, below-threshold search, numbering and zoom handled.
+    the software is properly installed.
+
+    Running your own data via Python script
+    With your virtual environment activated (venv\Scripts\activate.bat), create a file named run_thannya.py in the root directory using any text editor (e.g., Notepad or VS Code).
+
+    The example below runs two comparative batch analyses sequentially (50 Corymbia plastomes and 150 Arecaceae plastomes), saving the results inside their respective folders. Note that max_files=200 is passed for the       second dataset because the default limit is 50 genomes:
+    ---------------------------------------------------------
+    Python
+    import os
+    import time
+    from thannya.cli import run
+
+    # Dataset paths
+    input_corymbia = r"C:\path\to\your\50_Corymbias"
+    output_corymbia = r"C:\path\to\your\50_Corymbias\results_thannya"
+
+    input_arecaceae = r"C:\path\to\your\150_Arecaceae"
+    output_arecaceae = r"C:\path\to\your\150_Arecaceae\results_thannya"
+
+    print("=" * 60)
+    print("STARTING ANALYSIS OF THE CORYMBIAS (50 genomes)")
+    print("=" * 60)
+
+    start_cory = time.time()
+    run(input_corymbia, output_corymbia, log=print)
+    end_cory = time.time()
+    time_cory = end_cory - start_cory
+
+    print(f"\n[SUCCESS] Corymbias completed in: {time_cory:.2f} seconds ({time_cory / 60:.2f} minutes)\n")
+
+    print("=" * 60)
+    print("BEGINNING ANALYSIS OF ARECACEAE (150 genomes)")
+    print("=" * 60)
+
+    start_areca = time.time()
+    # Added max_files=200 to allow reading all 150 genomes (default is 50)
+    run(input_arecaceae, output_arecaceae, max_files=200, log=print)
+    end_areca = time.time()
+    time_areca = end_areca - start_areca
+
+    print(f"\n[SUCCESS] Arecaceae completed in: {time_areca:.2f} seconds ({time_areca / 60:.2f} minutes)\n")
+
+    print("=" * 60)
+    print("PROCESSING SUMMARY")
+    print(f"-> Corymbias (50 genomes): {time_cory / 60:.2f} min")
+    print(f"-> Arecaceae (150 genomes): {time_areca / 60:.2f} min")
+    print(f"-> Overall total time: {(time_cory + time_areca) / 60:.2f} min")
+    print("=" * 60)
+    ------------------------------------------------------
+
+    Tip (Single analysis or single-genome annotation): If you want to run only one comparative dataset or annotate a single FASTA file, simply keep only the corresponding input / output path variables and a single run(input_path, output_path, log=print) block (pointing input_path either to a single folder or directly to your single .fasta file), removing the second dataset block.
+
+    Execute the script:
+    python run_thannya.py
+    
 
 Input files: `01_speciesA.fasta`, `02_speciesB.fasta`, ... The number sets the order of the
 species in the report and in the plots; the first file is the reference genome.
