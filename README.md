@@ -21,7 +21,6 @@ them across species (up to 30 files on the web; locally, the CLI defaults to 50 
   Background jobs, the same 30-file / 1 MB-per-file upload limits, PDF figures and results kept for 24 h.
 
 ## Citation
-See [CITATION.cff](CITATION.cff). License: MIT (see `LICENSE`) or cite:
 Ribeiro, W. N. (2026). THANNYA: a tool for the annotation and identification of orthologous and unique microsatellites 
 in genomes (Version 1.2.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.24294334 
 
