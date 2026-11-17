@@ -256,7 +256,13 @@ _K = 6
 
 
 def _kset(s: str) -> set:
-    return {s[i:i + _K] for i in range(len(s) - _K + 1)}
+    """Extract k-mers of length _K, strictly ignoring any k-mer containing 'N'."""
+    s_upper = s.upper()
+    return {
+        s_upper[i : i + _K]
+        for i in range(len(s_upper) - _K + 1)
+        if "N" not in s_upper[i : i + _K]
+    }
 
 
 class _Anchor:
