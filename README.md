@@ -142,9 +142,10 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
     print("=" * 60)
     ------------------------------------------------------
 
-    # Tip (Single analysis or single-genome annotation): If you want to run only one comparative dataset or annotate a single FASTA file, 
-    simply keep only the corresponding input / output path variables and a single run(input_path, output_path, log=print) block 
-    (pointing input_path either to a single folder or directly to your single .fasta file), removing the second dataset block.
+    # Tip (Single analysis or single-genome annotation): If you want to run only one comparative dataset or 
+    annotate a single FASTA file, simply keep only the corresponding input / output path variables and a single
+    run(input_path, output_path, log=print) block (pointing input_path either to a single folder or directly to
+    your single .fasta file), removing the second dataset block.
 
     # Execute the script:
     python run_thannya.py
