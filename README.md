@@ -22,7 +22,7 @@ them across species (up to 30 files on the web; locally, the CLI defaults to 50 
 
 ## Citation
 Ribeiro, W. N. (2026). THANNYA: a tool for the annotation and identification of orthologous and unique microsatellites 
-in genomes (Version 1.2.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.24294334 
+in genomes (Version 1.3.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.24326519 
 
 ## Author and dedication
 Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANNYA is a tribute to the author’s doctoral supervisor.
