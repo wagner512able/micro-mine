@@ -27,7 +27,8 @@ See [CITATION.cff](CITATION.cff). License: MIT (see `LICENSE`).
 Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANNYA is a tribute to the author’s doctoral supervisor.
 
 ## Usage
-    ### Linux
+    ######################### LINUX
+
     # To install and run THANNYA locally, first navigate to your home directory (user root folder), 
     then clone the repository and enter the project directory by running:
     git clone https://github.com/wagner512able/thannya.git and 
@@ -67,7 +68,9 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
 
     If you would like more specific parameters, they are listed below in the "Main Options" section.
 
-    ### Windows (Command Prompt / CMD)
+
+    ######################### WINDOWS (Command Prompt / CMD)
+
 
     1. **Download and extract** the repository from GitHub (or clone it), open Command Prompt (`cmd`), and navigate to the project root folder (`thannya-main` or `thannya`).
     2. **Create and activate a virtual environment:**
@@ -134,7 +137,9 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
     print("=" * 60)
     ------------------------------------------------------
 
-    Tip (Single analysis or single-genome annotation): If you want to run only one comparative dataset or annotate a single FASTA file, simply keep only the corresponding input / output path variables and a single run(input_path, output_path, log=print) block (pointing input_path either to a single folder or directly to your single .fasta file), removing the second dataset block.
+    Tip (Single analysis or single-genome annotation): If you want to run only one comparative dataset or annotate a single FASTA file, 
+    simply keep only the corresponding input / output path variables and a single run(input_path, output_path, log=print) block 
+    (pointing input_path either to a single folder or directly to your single .fasta file), removing the second dataset block.
 
     Execute the script:
     python run_thannya.py
