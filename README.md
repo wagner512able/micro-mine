@@ -72,8 +72,10 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
     ######################### WINDOWS (Command Prompt / CMD)
 
 
-    1. **Download and extract** the repository from GitHub (or clone it), open Command Prompt (`cmd`), and navigate to the project root folder (`thannya-main` or `thannya`).
-    2. **Create and activate a virtual environment:**
+    # **Download and extract** the repository from GitHub (or clone it), open Command Prompt (`cmd`), and navigate 
+    to the project root folder (`thannya-main` or `thannya`).
+    
+    # **Create and activate a virtual environment:**
     ```cmd
     python -m venv venv
     venv\Scripts\activate.bat
@@ -90,9 +92,12 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
     the software is properly installed.
 
     # Running your own data via Python script
-    With your virtual environment activated (venv\Scripts\activate.bat), create a file named run_thannya.py in the root directory using any text editor (e.g., Notepad or VS Code).
+    With your virtual environment activated (venv\Scripts\activate.bat), create a file named run_thannya.py 
+    in the root directory using any text editor (e.g., Notepad or VS Code).
 
-    #The example below runs two comparative batch analyses sequentially (50 Corymbia plastomes and 150 Arecaceae plastomes), saving the results inside their respective folders. Note that max_files=200 is passed for the       second dataset because the default limit is 50 genomes:
+    #The example below runs two comparative batch analyses sequentially (50 Corymbia plastomes and 150 
+    Arecaceae plastomes), saving the results inside their respective folders. Note that max_files=200 is 
+    passed for the second dataset because the default limit is 50 genomes:
     ---------------------------------------------------------
     Python
     import os
