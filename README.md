@@ -78,21 +78,21 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
     python -m venv venv
     venv\Scripts\activate.bat
 
-    Install the package and dependencies locally:
+    # Install the package and dependencies locally:
     pip install -e ".[web]"
     pip install openpyxl
 
-    Verify the installation by running the built-in demonstration test:
+    # Verify the installation by running the built-in demonstration test:
     python tests/test_demo.py
 
     If the new files are generated and the terminal displays:
     OK: 14 loci; rotation/reverse strand, flank SNPs, below-threshold search, numbering and zoom handled.
     the software is properly installed.
 
-    Running your own data via Python script
+    # Running your own data via Python script
     With your virtual environment activated (venv\Scripts\activate.bat), create a file named run_thannya.py in the root directory using any text editor (e.g., Notepad or VS Code).
 
-    The example below runs two comparative batch analyses sequentially (50 Corymbia plastomes and 150 Arecaceae plastomes), saving the results inside their respective folders. Note that max_files=200 is passed for the       second dataset because the default limit is 50 genomes:
+    #The example below runs two comparative batch analyses sequentially (50 Corymbia plastomes and 150 Arecaceae plastomes), saving the results inside their respective folders. Note that max_files=200 is passed for the       second dataset because the default limit is 50 genomes:
     ---------------------------------------------------------
     Python
     import os
@@ -137,11 +137,11 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
     print("=" * 60)
     ------------------------------------------------------
 
-    Tip (Single analysis or single-genome annotation): If you want to run only one comparative dataset or annotate a single FASTA file, 
+    # Tip (Single analysis or single-genome annotation): If you want to run only one comparative dataset or annotate a single FASTA file, 
     simply keep only the corresponding input / output path variables and a single run(input_path, output_path, log=print) block 
     (pointing input_path either to a single folder or directly to your single .fasta file), removing the second dataset block.
 
-    Execute the script:
+    # Execute the script:
     python run_thannya.py
     
 
