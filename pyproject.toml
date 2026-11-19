@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "thannya"
-version = "1.2.0"
+version = "1.4.0"
 description = "a tool for the annotation and identification of orthologous and unique microsatellites in genomes"
 requires-python = ">=3.9"
 authors = [{name = "Wagner Nunes Ribeiro", email = "wagner2@egresso.ufg.br"}]
