@@ -1,4 +1,4 @@
-THANNYA — versão 1.2.0
+THANNYA — versão 1.4.0
 
 Esta distribuição contém a identidade THANNYA e as correções de tratamento de bases N.
 
