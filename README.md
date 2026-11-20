@@ -156,31 +156,32 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
 
 
     Tested on macOS 15.7.7 (Intel Core i7) with the Python 3.9.6 that ships with macOS. Apple Silicon (M1–M4) Macs use the same commands.
+    - On macOS, always use `python3` (not `python`): macOS only provides the `python3` command.
+    
     **1. Check Python (3.9 or later is required)**
     ```bash
     python3 --version
     ```
-    If macOS asks you to install the *command line developer tools*, accept it (or run `xcode-select --install`) and then repeat the command.
+    If macOS asks you to install the *command line developer tools*, accept it (or run `xcode-select --install`) 
+    and then repeat the command.
 
     **2. Download THANNYA**
 
-    Clone the repository:
+    Download the ZIP from GitHub (*Code → Download ZIP*), extract it (e.g. into `~/Documents/thannya`) and enter 
+    the folder:
     ```bash
-    cd ~/Documents
-    git clone https://github.com/wagner512able/thannya.git
-    cd thannya
+    cd ~/Documents/thannya/thannya-main
     ```
-    or download the ZIP from GitHub (*Code → Download ZIP*), extract it and enter the folder:
-    ```bash
-    cd ~/Documents/thannya-main
-    ```
+    Alternatively, clone the repository with `git clone https://github.com/wagner512able/thannya.git` and enter 
+    the `thannya` folder.
 
     **3. Create and activate a virtual environment**
     ```bash
     python3 -m venv venv
     source venv/bin/activate
     ```
-    The prompt now starts with `(venv)`. Run `source venv/bin/activate` again every time you open a new Terminal window.
+    The prompt now starts with `(venv)`. Run `source venv/bin/activate` again every time you open a new 
+    Terminal window.
 
     **4. Install THANNYA**
     ```bash
@@ -202,7 +203,8 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
     ```bash
     python3 -m thannya -i "$HOME/Documents/FASTAS/my_genomes" -o "$HOME/Documents/FASTAS/my_genomes/results_thannya"
     ```
-    Use quotes around paths that contain spaces, and use `$HOME` instead of `~` inside quotes. Add `--max-files 200` to compare more than 50 genomes.
+    Use quotes around paths that contain spaces, and use `$HOME` instead of `~` inside quotes. 
+    Add `--max-files 200` to compare more than 50 genomes.
 
     *Option B: Python script (several datasets in sequence)*
 
