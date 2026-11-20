@@ -150,6 +150,105 @@ Developed by Ph.D. Wagner Nunes Ribeiro - wagner2@egresso.ufg.br. The name THANN
 
     # Execute the script:
     python run_thannya.py
+
+
+    ######################### macOS (Terminal)
+
+
+    Tested on macOS 15.7.7 (Intel Core i7) with the Python 3.9.6 that ships with macOS. Apple Silicon (M1–M4) Macs use the same commands.
+    **1. Check Python (3.9 or later is required)**
+    ```bash
+    python3 --version
+    ```
+    If macOS asks you to install the *command line developer tools*, accept it (or run `xcode-select --install`) and then repeat the command.
+
+    **2. Download THANNYA**
+
+    Clone the repository:
+    ```bash
+    cd ~/Documents
+    git clone https://github.com/wagner512able/thannya.git
+    cd thannya
+    ```
+    or download the ZIP from GitHub (*Code → Download ZIP*), extract it and enter the folder:
+    ```bash
+    cd ~/Documents/thannya-main
+    ```
+
+    **3. Create and activate a virtual environment**
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate
+    ```
+    The prompt now starts with `(venv)`. Run `source venv/bin/activate` again every time you open a new Terminal window.
+
+    **4. Install THANNYA**
+    ```bash
+    pip install --upgrade pip
+    pip install -e ".[web]"
+    ```
+
+    **5. Verify the installation**
+    ```bash
+    python3 -m thannya --version     # prints the installed version (e.g. 1.4.0)
+    python3 tests/test_demo.py
+    ```
+    The installation is correct if the test ends with:
+    `OK: 14 loci; rotation/reverse strand, flank SNPs, below-threshold search, numbering and zoom handled.`
+
+    **6. Run your own data**
+
+    *Option A: command line*
+    ```bash
+    python3 -m thannya -i "$HOME/Documents/FASTAS/my_genomes" -o "$HOME/Documents/FASTAS/my_genomes/results_thannya"
+    ```
+    Use quotes around paths that contain spaces, and use `$HOME` instead of `~` inside quotes. Add `--max-files 200` to compare more than 50 genomes.
+
+    *Option B: Python script (several datasets in sequence)*
+
+    Create a file named `run_thannya.py` in the THANNYA folder (for example with `nano run_thannya.py`) containing:
+    ```python
+    import os
+    import time
+    from thannya.cli import run
+
+    # folder that contains one sub-folder of FASTA files per dataset
+    base = os.path.expanduser("~/Documents/FASTAS")
+
+    # (sub-folder, maximum number of genomes)
+    datasets = [
+    ("dataset_1", 50),
+    ("dataset_2", 200),
+    ]
+
+    for folder, maxf in datasets:
+    inp = os.path.join(base, folder)
+    out = os.path.join(inp, "results_thannya")
+    if not os.path.isdir(inp):
+        print(f"[ERROR] FASTA folder not found: {inp}")
+        continue
+    os.makedirs(out, exist_ok=True)
+    print("=" * 60, f"\nSTARTING {folder}\n" + "=" * 60)
+    t0 = time.time()
+    run(inp, out, max_files=maxf, log=print)
+    dt = time.time() - t0
+    print(f"\n[SUCCESS] {folder} completed in {dt:.2f} s ({dt/60:.2f} min)\n")
+    ```
+    Save it (in nano: `Ctrl+O`, `Enter`, `Ctrl+X`) and run it, keeping a copy of the screen output in a log file:
+    ```bash
+    python3 run_thannya.py 2>&1 | tee thannya_log.txt
+    ```
+
+    **7. Local web interface (optional)**
+    ```bash
+    thannya-web
+    ```
+    Open http://127.0.0.1:8000 in your browser; press `Ctrl+C` in the Terminal to stop the server.
+
+**Notes**
+- Input FASTA files must start with a two-digit number that sets the processing order (`01_speciesA.fasta`, `02_speciesB.fasta`, ...); genome 01 is the reference.
+- PDF figures (`--pdf`) additionally require `brew install cairo` and `pip install cairosvg`.
+
     
 
 Input files: `01_speciesA.fasta`, `02_speciesB.fasta`, ... The number sets the order of the
